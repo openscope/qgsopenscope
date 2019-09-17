@@ -1,0 +1,7 @@
+{
+  "python.pythonPath": "/usr/bin/python3",
+  "python.linting.pylintArgs": [
+    "--extension-pkg-whitelist=PyQt5,qgis,processing",
+    "--errors-only"
+  ]
+}
