@@ -1,8 +1,10 @@
+"""An opeScope Fix object"""
 import json
-from qgis.core import QgsFeature, QgsGeometry, QgsVectorLayer
 from .functions import fromPointXY, toPointXY
 
 class FixModel:
+    """An opeScope Fix object"""
+
     location = None
 
     name = None
@@ -13,10 +15,12 @@ class FixModel:
 
     @staticmethod
     def export(layer):
+        """Export the specified QgsMapLayer features to JSON"""
+
         lines = []
 
         # Sort fixes in order of name, but place underscores at the top
-        for f in sorted(layer.getFeatures(), key = lambda x: x['name'].replace('_', ' ')):
+        for f in sorted(layer.getFeatures(), key=lambda x: x['name'].replace('_', ' ')):
             name = f['name']
             spaces = ' ' * max(0, 5 - len(name))
             lines.append('    %(name)s%(spaces)s: %(coords)s' % {
@@ -30,4 +34,3 @@ class FixModel:
 }"""
 
         return template % ',\n'.join(lines)
-

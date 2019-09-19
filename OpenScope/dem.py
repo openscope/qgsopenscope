@@ -1,8 +1,8 @@
+"""A collection of DEM file functions."""
 import math
 import os
 import urllib.request
 import zipfile
-from qgis.core import QgsRectangle
 
 _DEM_URI = 'http://viewfinderpanoramas.org/dem3/%s.zip'
 
@@ -17,7 +17,7 @@ def getDemFromBounds(path, bounds):
     for item in graticules:
         dem = _downloadDem(path, item)
         # May be null if the tile doesn't exist
-        if dem != None:
+        if dem is not None:
             dems.append(dem)
 
     return dems
@@ -44,7 +44,7 @@ def getGraticules(bounds):
 
 def getGroupFromGraticule(graticule):
     """Gets the name of the group for the specified graticule."""
-    
+
     return '%(hem)s%(row)s%(col)02d' % {
         'hem': 'S' if graticule[1] < 0 else '',
         'row': chr(65 + int(abs(graticule[1] / 4))),
@@ -78,12 +78,12 @@ def _downloadDem(path, graticule):
     demName = os.path.join(path, groupName, '%s.hgt' % name)
 
     # Already exists
-    if (os.path.isfile(demName)):
+    if os.path.isfile(demName):
         print('Got %s' % name)
         return demName
-    
+
     # Download the group and extract all the contents
-    zipName = os.path.join(path, '%s.zip' % groupName) 
+    zipName = os.path.join(path, '%s.zip' % groupName)
     if not os.path.isfile(zipName):
         uri = _DEM_URI % groupName
         print('Downloading %s.zip...' % groupName)
@@ -97,6 +97,6 @@ def _downloadDem(path, graticule):
     if os.path.exists(demName):
         print('Got %s' % name)
         return demName
-    else:
-        print('No DEM file available for %s' % name)
-        return None
+
+    print('No DEM file available for %s' % name)
+    return None

@@ -1,5 +1,6 @@
+"""A collection of functions to help importing and exporting airport data."""
 import re
-from qgis.core import QgsPointXY
+from qgis._core import QgsPointXY
 
 EXPORT_PRECISION = 5
 
@@ -25,7 +26,7 @@ def fromPolygon(feature):
     """Takes a Polygon QgsFeature and creates an array of [lat,lng] values."""
 
     polygon = feature.geometry().asPolygon()[0] # asPolygon returns an array here, use the first item
-    points = list(map(lambda point: fromPointXY(point), polygon))
+    points = [fromPointXY(point) for point in polygon]
 
     # Ensure a close polygon isn't returned
     if polygon[0] == polygon[-1]:
@@ -51,8 +52,8 @@ def fromPolylines(features):
     """Takes an an iterable of QgsFeature objects and creates an array of [lat,lng,lat,lng] values."""
 
     # Gets a [lat,lng,lat,lng][]
-    linesList = list(map(lambda feature: fromPolyline(feature), features))
-    
+    linesList = [fromPolyline(feature) for feature in features]
+
     # Flattens the 2d list
     return [item for lines in linesList for item in lines]
 
@@ -61,30 +62,30 @@ def parseCoordinateValue(value):
 
     This emulates openScope's unitConverter.parseCoordinate method
     """
-    if (isinstance(value, float) or isinstance(value, int)):
+    if isinstance(value, (float, int)):
         return value
 
     match = _LAT_LNG.match(str(value))
-    if (match == None):
-        raise(Exception('Cannot parse %s as coordinate' % value))
-    
+    if match is None:
+        raise Exception('Cannot parse %s as coordinate' % value)
+
     degrees = float(match.group(2))
     minutes = 0
     seconds = 0
-    if (match.group(5) != None):
+    if match.group(5) is not None:
         minutes = float(match.group(5)) / 60
 
-    if (match.group(8) != None):
+    if match.group(8) is not None:
         seconds = float(match.group(8)) / 3600
-    
+
     decimalDegrees = degrees + minutes + seconds
 
-    if (_SW.match(match.group(1))):
+    if _SW.match(match.group(1)):
         decimalDegrees *= -1
 
     return decimalDegrees
 
-def toPointXY(array, index = 0):
+def toPointXY(array, index=0):
     """Gets the QgsPointXY from the array at the specified index."""
     return QgsPointXY(
         parseCoordinateValue(array[index + 1]), # Longitude
@@ -94,7 +95,7 @@ def toPointXY(array, index = 0):
 def toPolygon(values):
     """Parses an array of [lat,lng] values into an array of QPointXY objects"""
 
-    polygon = list(map(lambda x: toPointXY(x), values))
+    polygon = [toPointXY(x) for x in values]
 
     # Make sure the polygon isn't closed
     if polygon[0] == polygon[-1]:
@@ -104,7 +105,7 @@ def toPolygon(values):
 
 def toPolyline(values):
     """Parses an array of [lat,lng,lat,lng...] values into an 2d array of QPointXY objects"""
-    
+
     lines = []
 
     for item in values:

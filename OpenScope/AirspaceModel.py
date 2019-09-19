@@ -1,8 +1,10 @@
+"""An openScope airspace object."""
 import json
-from qgis.core import QgsFeature, QgsField, QgsGeometry, QgsVectorLayer
 from .functions import fromPolygon, toPolygon
 
 class AirspaceModel:
+    """An openScope airspace object."""
+
     airspaceClass = None
 
     ceiling = None
@@ -13,22 +15,24 @@ class AirspaceModel:
 
     poly = []
 
-    def __init__(self, json):
-        self.airspaceClass = json['airspace_class']
-        self.ceiling = json['ceiling']
-        self.floor = json['floor']
-        self.name = None # json['name']
-        self.poly = toPolygon(json['poly'])
+    def __init__(self, value):
+        self.airspaceClass = value['airspace_class']
+        self.ceiling = value['ceiling']
+        self.floor = value['floor']
+        self.name = None # value['name']
+        self.poly = toPolygon(value['poly'])
 
     @staticmethod
     def export(layer):
+        """Export the specified QgsMapLayer features to JSON"""
+
         lines = []
 
         # Sort in order of area, largest first
-        for f in sorted(layer.getFeatures(), key = lambda x : -x.geometry().area()):
+        for f in sorted(layer.getFeatures(), key=lambda x: -x.geometry().area()):
             # The formatted list of lines
             poly = fromPolygon(f)
-            pointLines = list(map(lambda x : '        ' + json.dumps(x), poly))
+            pointLines = list(map(lambda x: '        ' + json.dumps(x), poly))
 
             template = """{
     "floor": %(floor)d,
@@ -38,7 +42,7 @@ class AirspaceModel:
 %(poly)s
     ]
 }"""
-            
+
             lines.append(template % {
                 'floor': f['floor'],
                 'ceiling': f['ceiling'],
