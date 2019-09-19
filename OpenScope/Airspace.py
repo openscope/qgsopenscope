@@ -1,7 +1,6 @@
 import json
 from qgis.core import QgsFeature, QgsField, QgsGeometry, QgsVectorLayer
-from PyQt5.QtCore import QVariant
-from .functions import getOpenScopeLatLng, parseCoordinatesList
+from .functions import fromPolygon, toPolygon
 
 class Airspace:
     airspaceClass = None
@@ -19,18 +18,16 @@ class Airspace:
         self.ceiling = json['ceiling']
         self.floor = json['floor']
         self.name = None # json['name']
-        self.poly = list(map(lambda item: item[0], parseCoordinatesList(json['poly'])))
+        self.poly = toPolygon(json['poly'])
 
     @staticmethod
     def export(layer):
-        # Sort in order of area, largest first
-        features = sorted(layer.getFeatures(), key = lambda x : -x.geometry().area())
-
         lines = []
-        for f in features:
+
+        # Sort in order of area, largest first
+        for f in sorted(layer.getFeatures(), key = lambda x : -x.geometry().area()):
             # The formatted list of lines
-            poly = list(map(lambda x : getOpenScopeLatLng(x), f.geometry().asPolygon()[0]))
-            del poly[-1]
+            poly = fromPolygon(f)
             pointLines = list(map(lambda x : '        ' + json.dumps(x), poly))
 
             template = """{

@@ -1,6 +1,6 @@
 import json
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorLayer
-from .functions import getOpenScopeLatLng, parseCoordinatesList
+from .functions import fromPolylines, toPolyline
 
 class Map:
     lines = []
@@ -8,23 +8,17 @@ class Map:
     name = None
 
     def __init__(self, name, lines):
-        self.lines =  parseCoordinatesList(lines)
+        self.lines =  toPolyline(lines)
         self.name = name
 
     @staticmethod
     def export(layers):
         lines = []
 
-        for l in layers:
+        # Sort maps in order of name
+        for l in sorted(layers, key = lambda x: x.name()):
             # The formatted list of lines
-            poly = []
-            for f in l.getFeatures():
-                points = f.geometry().asPolyline()
-                count = len(points)
-                i = 0
-                while i < count - 1:
-                    poly.append(getOpenScopeLatLng(points[i]) + getOpenScopeLatLng(points[i + 1]))
-                    i += 1
+            poly = fromPolylines(l.getFeatures())
 
             pointLines = list(map(lambda x : '        ' + json.dumps(x), poly))
 

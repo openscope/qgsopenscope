@@ -6,7 +6,6 @@ from .Airspace import Airspace
 from .Fix import Fix
 from .Map import Map
 from .Restricted import Restricted
-from .functions import parseCoordinatesList
 
 # An openScope airport object
 class Airport:

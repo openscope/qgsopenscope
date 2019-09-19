@@ -216,7 +216,7 @@ class ProjectGenerator:
 
         for r in self.getAirport().getRestricted():
             feature = QgsFeature()
-            feature.setGeometry(QgsGeometry.fromPolygonXY([r.poly]))
+            feature.setGeometry(QgsGeometry.fromPolygonXY([r.coordinates]))
             feature.setAttributes([
                 None, # ID
                 r.name,

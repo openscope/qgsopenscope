@@ -1,6 +1,6 @@
 import json
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorLayer
-from .functions import getOpenScopeLatLng, parseCoordinates
+from .functions import fromPointXY, toPointXY
 
 class Fix:
     location = None
@@ -8,28 +8,21 @@ class Fix:
     name = None
 
     def __init__(self, name, location):
-        self.location = parseCoordinates(location)[0]
+        self.location = toPointXY(location)
         self.name = name
 
     @staticmethod
     def export(layer):
-        features = {}
-        for feature in layer.getFeatures():
-            features[feature['name']] = feature
-
-        # Custom sorting, so underscore is before letters
-        keys = sorted(features.keys(), key = lambda x : x.replace('_', ' '))
-
-        # To conform with the airport.json style guide
         lines = []
-        for k in keys:
-            f = features[k]
-            p = f.geometry()
-            spaces = ' ' * max(0, 5 - len(k))
+
+        # Sort fixes in order of name, but place underscores at the top
+        for f in sorted(layer.getFeatures(), key = lambda x: x['name'].replace('_', ' ')):
+            name = f['name']
+            spaces = ' ' * max(0, 5 - len(name))
             lines.append('    %(name)s%(spaces)s: %(coords)s' % {
-                'name': json.dumps(k),
+                'name': json.dumps(name),
                 'spaces': spaces,
-                'coords': json.dumps(getOpenScopeLatLng(p.asPoint()))
+                'coords': json.dumps(fromPointXY(f.geometry().asPoint()))
             })
 
         template = """{
