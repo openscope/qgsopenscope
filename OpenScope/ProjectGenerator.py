@@ -359,7 +359,7 @@ class ProjectGenerator:
         return self._config.contourInterval
 
     def _getElevationData(self, boundingLayer, feedback):
-        demFiles = get_dem_from_layer(self.getDemsPath(), boundingLayer)
+        demFiles = getDemFromLayer(self.getDemsPath(), boundingLayer)
 
         airportPath = self.getAirportPath()
 
