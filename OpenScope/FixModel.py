@@ -2,7 +2,7 @@ import json
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorLayer
 from .functions import fromPointXY, toPointXY
 
-class Fix:
+class FixModel:
     location = None
 
     name = None

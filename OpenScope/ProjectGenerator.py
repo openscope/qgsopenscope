@@ -11,7 +11,7 @@ from qgis.core import (QgsFeature, QgsFeatureRequest, QgsField,
 from qgis.utils import iface
 from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QColor, QFont
-from .Airport import Airport
+from .AirportModel import AirportModel
 from .dem import *
 
 MEMORY_OUTPUT = 'memory:'

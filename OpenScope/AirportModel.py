@@ -2,13 +2,13 @@ import re
 import json
 import numpy
 from qgis.core import QgsPointXY
-from .Airspace import Airspace
-from .Fix import Fix
-from .Map import Map
-from .Restricted import Restricted
+from .AirspaceModel import AirspaceModel
+from .FixModel import FixModel
+from .MapModel import MapModel
+from .RestrictedModel import RestrictedModel
 
 # An openScope airport object
-class Airport:
+class AirportModel:
     _airport = None
 
     # Initializes the airport object
@@ -21,7 +21,7 @@ class Airport:
             self._airport = json.load(f)
 
     def getAirspace(self):
-        return list(map(lambda item: Airspace(item), self._airport['airspace']))
+        return list(map(lambda item: AirspaceModel(item), self._airport['airspace']))
 
     def getIcao(self):
         return self._airport['icao']
@@ -30,7 +30,7 @@ class Airport:
         fixes = []
 
         for key, value in self._airport['fixes'].items():
-            fixes.append(Fix(key, value))
+            fixes.append(FixModel(key, value))
         
         return fixes
 
@@ -40,16 +40,16 @@ class Airport:
         mapsJson = self._airport['maps']
         if type(mapsJson) is dict:
             for key, value in mapsJson.items():
-                maps.append(Map(key, value))
+                maps.append(MapModel(key, value))
 
         else:
             for value in mapsJson:
-                maps.append(Map(value['name'], value['lines']))
+                maps.append(MapModel(value['name'], value['lines']))
         
         return maps
 
     def getRestricted(self):
         return list(map(
-            lambda item: Restricted(item),
+            lambda item: RestrictedModel(item),
             self._airport.get('restricted') or []
         ))

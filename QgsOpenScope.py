@@ -36,10 +36,10 @@ import os.path
 import json
 import processing
 from qgis.core import QgsProject, QgsVectorFileWriter
-from .OpenScope.Airspace import Airspace
-from .OpenScope.Fix import Fix
-from .OpenScope.Map import Map
-from .OpenScope.Restricted import Restricted
+from .OpenScope.AirspaceModel import AirspaceModel
+from .OpenScope.FixModel import FixModel
+from .OpenScope.MapModel import MapModel
+from .OpenScope.RestrictedModel import RestrictedModel
 
 class QgsOpenScope:
     """QGIS Plugin Implementation."""
@@ -259,7 +259,7 @@ class QgsOpenScope:
             QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find a \'Airspace\' layer.')
             return
 
-        self.copyToClipboard(Airspace.export(airspaces[0]))
+        self.copyToClipboard(AirspaceModel.export(airspaces[0]))
         QMessageBox.information(None, 'QgsOpenScope', 'Airspace JSON has been copied to the clipboard.')
 
     def exportFixes(self):
@@ -270,7 +270,7 @@ class QgsOpenScope:
             QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find a \'Fixes\' layer.')
             return
 
-        self.copyToClipboard(Fix.export(fixes[0]))
+        self.copyToClipboard(FixModel.export(fixes[0]))
         QMessageBox.information(None, 'QgsOpenScope', 'Fixes JSON has been copied to the clipboard.')
 
     def exportRestricted(self):
@@ -281,7 +281,7 @@ class QgsOpenScope:
             QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find a \'Restricted\' layer.')
             return
 
-        self.copyToClipboard(Restricted.export(restricted[0]))
+        self.copyToClipboard(RestrictedModel.export(restricted[0]))
         QMessageBox.information(None, 'QgsOpenScope', 'Restricted Airspace JSON has been copied to the clipboard.')
 
     def exportMaps(self):
@@ -293,7 +293,7 @@ class QgsOpenScope:
 
         layers = list(map(lambda x : x.layer(), mapsGroup.children()))
 
-        self.copyToClipboard(Map.export(layers))
+        self.copyToClipboard(MapModel.export(layers))
         QMessageBox.information(None, 'QgsOpenScope', 'Map JSON has been copied to the clipboard.')
 
     def exportTerrain(self):

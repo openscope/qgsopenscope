@@ -2,7 +2,7 @@ import json
 from qgis.core import QgsFeature, QgsField, QgsGeometry, QgsVectorLayer
 from .functions import fromPolygon, toPolygon
 
-class Restricted:
+class RestrictedModel:
     height = None
 
     name = None

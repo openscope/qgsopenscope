@@ -32,7 +32,7 @@ from qgis.utils import iface
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox
-from .OpenScope.Airport import Airport
+from .OpenScope.AirportModel import AirportModel
 from .OpenScope.ProjectGenerator import ProjectGenerator, ProjectGeneratorConfig
 
 
@@ -75,7 +75,7 @@ class QgsOpenScopeDialog(QtWidgets.QDialog, FORM_CLASS):
         config.contourInterval = 304.8
 
         fileName = self.txtAirportPath.text()
-        airport = Airport(fileName)
+        airport = AirportModel(fileName)
 
         if not os.path.isfile(fileName):
             QMessageBox.warning('Airport File \'%s\' does not exist.' % fileName)

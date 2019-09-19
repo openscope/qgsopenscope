@@ -2,7 +2,7 @@ import json
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorLayer
 from .functions import fromPolylines, toPolyline
 
-class Map:
+class MapModel:
     lines = []
 
     name = None
