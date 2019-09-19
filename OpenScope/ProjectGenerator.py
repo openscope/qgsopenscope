@@ -17,6 +17,8 @@ from .dem import *
 MEMORY_OUTPUT = 'memory:'
 
 class ProjectGeneratorConfig:
+    """The configuration options passed to the ProjectGenerator constructor."""
+
     contourInterval = 304.8
 
     gshhsPath = None
@@ -24,13 +26,19 @@ class ProjectGeneratorConfig:
     tmpPath = tempfile.gettempdir()
 
 class ProjectGenerator:
+    """The project generator."""
+
     _airport = None
 
     _config = None
 
+#------------------- Lifecycle -------------------
+
     def __init__(self, airport, config):
         self._airport = airport
         self._config = config
+
+#------------------- Public -------------------
 
     def getAirport(self):
         return self._airport
@@ -71,6 +79,8 @@ class ProjectGenerator:
         canvas.setExtent(airspaceLayer.extent())
         canvas.refreshAllLayers()
     
+#------------------- Private -------------------
+
     def _addGroup(self, name, parent = None):
         if not parent:
             parent = QgsProject.instance().layerTreeRoot()

@@ -6,7 +6,69 @@ from qgis.core import QgsRectangle
 
 _DEM_URI = 'http://viewfinderpanoramas.org/dem3/%s.zip'
 
-def getDem(path, graticule):
+#------------------- Public -------------------
+
+def getDemFromBounds(path, bounds):
+    """Gets a list of the filename of the DEMs intersecting the QgsRectangle."""
+
+    graticules = getGraticules(bounds)
+
+    dems = []
+    for item in graticules:
+        dem = _downloadDem(path, item)
+        # May be null if the tile doesn't exist
+        if dem != None:
+            dems.append(dem)
+
+    return dems
+
+def getDemFromLayer(path, layer):
+    """Gets a list of the filename of the DEMs intersecting the QgsMapLayer."""
+    return getDemFromBounds(path, layer.extent())
+
+def getGraticules(bounds):
+    """Gets a list of graticule tuples intersecting the specified QgsRectangle."""
+
+    # Generate the list of all the DEM files needed
+    x0 = math.floor(bounds.xMinimum())
+    y0 = math.floor(bounds.yMinimum())
+    x1 = math.ceil(bounds.xMaximum())
+    y1 = math.ceil(bounds.yMaximum())
+    dems = []
+
+    for x in range(x0, x1):
+        for y in range(y0, y1):
+            dems.append([x, y])
+
+    return dems
+
+def getGroupFromGraticule(graticule):
+    """Gets the name of the group for the specified graticule."""
+    
+    return '%(hem)s%(row)s%(col)02d' % {
+        'hem': 'S' if graticule[1] < 0 else '',
+        'row': chr(65 + int(abs(graticule[1] / 4))),
+        'col': 1 + (graticule[0] + 180) / 6
+    }
+
+def getNameFromGraticule(graticule):
+    """Gets the name of the DEM for the specified graticule."""
+
+    return '%(lath)s%(lat)02d%(lngh)s%(lng)03d' % {
+        'lngh': 'W' if graticule[0] < 0 else 'E',
+        'lng': abs(graticule[0]),
+        'lath': 'S' if graticule[1] < 0 else 'N',
+        'lat': abs(graticule[1])
+    }
+
+#------------------- Private -------------------
+
+def _downloadDem(path, graticule):
+    """Downloads the DEM file for the specified graticule.
+
+    returns the filename of the DEM, or None if not available.
+    """
+
     name = getNameFromGraticule(graticule) # The name of the hgt file
 
     groupName = getGroupFromGraticule(graticule) # The 4x6 degree graticule
@@ -38,47 +100,3 @@ def getDem(path, graticule):
     else:
         print('No DEM file available for %s' % name)
         return None
-
-def getDemFromLayer(path, layer):
-    # Get the bounding box of all the features
-    bounds = layer.extent()
-
-    graticules = getGraticules(bounds)
-
-    dems = []
-    for item in graticules:
-        dem = getDem(path, item)
-        # May be null if the tile doesn't exist
-        if dem != None:
-            dems.append(dem)
-
-    return dems
-
-def getGraticules(bounds):
-    # Generate the list of all the DEM files needed
-    x0 = math.floor(bounds.xMinimum())
-    y0 = math.floor(bounds.yMinimum())
-    x1 = math.ceil(bounds.xMaximum())
-    y1 = math.ceil(bounds.yMaximum())
-    dems = []
-
-    for x in range(x0, x1):
-        for y in range(y0, y1):
-            dems.append([x, y])
-
-    return dems
-
-def getGroupFromGraticule(graticule):
-    return '%(hem)s%(row)s%(col)02d' % {
-        'hem': 'S' if graticule[1] < 0 else '',
-        'row': chr(65 + int(abs(graticule[1] / 4))),
-        'col': 1 + (graticule[0] + 180) / 6
-    }
-
-def getNameFromGraticule(graticule):
-    return '%(lath)s%(lat)02d%(lngh)s%(lng)03d' % {
-        'lngh': 'W' if graticule[0] < 0 else 'E',
-        'lng': abs(graticule[0]),
-        'lath': 'S' if graticule[1] < 0 else 'N',
-        'lat': abs(graticule[1])
-    }
