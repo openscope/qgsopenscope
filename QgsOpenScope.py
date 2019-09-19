@@ -36,10 +36,10 @@ import os.path
 import json
 import processing
 from qgis.core import QgsProject, QgsVectorFileWriter
-from .OpenScope.functions import getOpenScopeLatLng
 from .OpenScope.Airspace import Airspace
 from .OpenScope.Fix import Fix
 from .OpenScope.Map import Map
+from .OpenScope.Restricted import Restricted
 
 class QgsOpenScope:
     """QGIS Plugin Implementation."""
@@ -198,13 +198,13 @@ class QgsOpenScope:
             parent=self.iface.mainWindow(),
             add_to_toolbar=False
         )
-        # self.add_action(
-        #     None,
-        #     text='Export Restricted',
-        #     callback=self.exportRestricted,
-        #     parent=self.iface.mainWindow(),
-        #     add_to_toolbar=False
-        # )
+        self.add_action(
+            None,
+            text='Export Restricted',
+            callback=self.exportRestricted,
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False
+        )
         self.add_action(
             None,
             text='Export Terrain',
@@ -274,7 +274,15 @@ class QgsOpenScope:
         QMessageBox.information(None, 'QgsOpenScope', 'Fixes JSON has been copied to the clipboard.')
 
     def exportRestricted(self):
-        pass
+        root = self.iface.layerTreeView()
+        restricted = QgsProject.instance().mapLayersByName('Restricted')
+
+        if len(restricted) == 0:
+            QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find a \'Restricted\' layer.')
+            return
+
+        self.copyToClipboard(Restricted.export(restricted[0]))
+        QMessageBox.information(None, 'QgsOpenScope', 'Restricted Airspace JSON has been copied to the clipboard.')
 
     def exportMaps(self):
         mapsGroup = QgsProject.instance().layerTreeRoot().findGroup('Maps')
