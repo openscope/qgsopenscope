@@ -43,6 +43,7 @@ from .OpenScope.AirspaceModel import AirspaceModel
 from .OpenScope.FixModel import FixModel
 from .OpenScope.MapModel import MapModel
 from .OpenScope.RestrictedModel import RestrictedModel
+from .OpenScope.functions import EXPORT_PRECISION
 
 class QgsOpenScope:
     """QGIS Plugin Implementation."""
@@ -343,6 +344,6 @@ class QgsOpenScope:
                 merged.fields().indexFromName('elevation') # Only the elevation layer
             ],
             layerOptions=[
-                'COORDINATE_PRECISION=10'
+                'COORDINATE_PRECISION=%d' % EXPORT_PRECISION
             ]
         )
