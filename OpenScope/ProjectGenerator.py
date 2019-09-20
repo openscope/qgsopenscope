@@ -1,18 +1,19 @@
+"""The project generator."""
 import os
 import tempfile
-import processing
-from qgis.core import (QgsFeature, QgsFeatureRequest, QgsField,
+from PyQt5.QtCore import QVariant
+from PyQt5.QtGui import QColor
+from qgis.core import (
+    QgsFeature, QgsFeatureRequest, QgsField,
     QgsGeometry,
     QgsMarkerSymbol,
     QgsPalLayerSettings, QgsProject,
     QgsRasterLayer,
-    QgsTextBufferSettings, QgsTextFormat,
-    QgsVectorLayer, QgsVectorLayerSimpleLabeling, QgsVectorFileWriter)
+    QgsVectorLayer, QgsVectorLayerSimpleLabeling, QgsVectorFileWriter
+)
 from qgis.utils import iface
-from PyQt5.QtCore import QVariant
-from PyQt5.QtGui import QColor, QFont
-from .AirportModel import AirportModel
-from .dem import *
+import processing
+from .dem import getDemFromLayer
 
 MEMORY_OUTPUT = 'memory:'
 
@@ -41,25 +42,31 @@ class ProjectGenerator:
 #------------------- Public -------------------
 
     def getAirport(self):
+        """Gets the AirportModel."""
         return self._airport
 
     def getAirportPath(self):
+        """Gets the location of where temporary files for the airport should be stored."""
         path = os.path.join(self.getTempPath(), self.getIcao())
         os.makedirs(path, exist_ok=True)
         return path
 
     def getDemsPath(self):
+        """Gets the location of where DEM files should be stored."""
         path = os.path.join(self.getTempPath(), 'dems')
         os.makedirs(path, exist_ok=True)
         return path
 
     def getIcao(self):
+        """Gets the ICAO code of the airport."""
         return self.getAirport().getIcao()
 
     def getTempPath(self):
+        """Gets the temporary directory."""
         return os.path.join(self._config.tmpPath, 'qgsopenscope')
 
-    def populateProject(self, feedback = None):
+    def populateProject(self, feedback=None):
+        """Populates the project."""
         QgsProject.instance().clear()
 
         root = QgsProject.instance().layerTreeRoot()
@@ -78,27 +85,32 @@ class ProjectGenerator:
         canvas = iface.mapCanvas()
         canvas.setExtent(airspaceLayer.extent())
         canvas.refreshAllLayers()
-    
+
 #------------------- Private -------------------
 
-    def _addGroup(self, name, parent = None):
+    def _addGroup(self, name, parent=None):
+        """Add a group to the project's layer tree."""
         if not parent:
             parent = QgsProject.instance().layerTreeRoot()
-        return parent.addGroup(name)        
+        return parent.addGroup(name)
 
     def _addLayerToGroup(self, layer, group):
+        """Add the layer to the specified group."""
         QgsProject.instance().addMapLayer(layer, False)
         group.addLayer(layer)
-        
-    def _createMemoryLayer(self, name, layerType, fields = []):
+
+    def _createMemoryLayer(self, name, layerType, fields=None):
+        """Creates a new in-memory QgsVectorLayer."""
         layer = QgsVectorLayer('%s?crs=epsg:4326' % layerType, name, 'memory')
-        
-        layer.dataProvider().addAttributes(fields)
-        layer.updateFields()
+
+        if fields is not None:
+            layer.dataProvider().addAttributes(fields)
+            layer.updateFields()
 
         return layer
 
-    def _createVectorLayer(self, name, layerType, fields = [], fileName = None):
+    def _createVectorLayer(self, name, layerType, fields=None, fileName=None):
+        """Creates a new QgsVectorLayer."""
         if not fileName:
             fileName = name
         fileName = os.path.join(self.getAirportPath(), '%s.gpkg' % fileName)
@@ -112,10 +124,11 @@ class ProjectGenerator:
             layer.crs(),
             'GPKG'
         )
-    
+
         return QgsVectorLayer(fileName, name)
 
     def _generateAirspace(self, group):
+        """Generate the Airspace layer."""
         fields = [
             QgsField('name', QVariant.String),
             QgsField('airspace_class', QVariant.String),
@@ -123,7 +136,6 @@ class ProjectGenerator:
             QgsField('ceiling', QVariant.Int)
         ]
         layer = self._createVectorLayer('Airspace', 'Polygon', fields)
-        dp = layer.dataProvider()
         features = []
 
         for a in self.getAirport().getAirspace():
@@ -157,11 +169,11 @@ class ProjectGenerator:
         return layer
 
     def _generateFixes(self, group):
+        """Generate the Fixes layer."""
         fields = [
             QgsField('name', QVariant.String),
         ]
         layer = self._createVectorLayer('Fixes', 'Point', fields)
-        dp = layer.dataProvider()
         features = []
 
         for p in self.getAirport().getFixes():
@@ -198,6 +210,7 @@ class ProjectGenerator:
         self._addLayerToGroup(layer, group)
 
     def _generateMaps(self, group):
+        """Generates the Map layers."""
         for m in self.getAirport().getMaps():
             layer = self._createVectorLayer(m.name, 'LineString', fileName='Map - %s' % m.name)
             features = []
@@ -216,12 +229,12 @@ class ProjectGenerator:
             self._addLayerToGroup(layer, group)
 
     def _generateRestricted(self, group):
+        """Generate the Restricted layer."""
         fields = [
             QgsField('name', QVariant.String),
             QgsField('height', QVariant.String),
         ]
         layer = self._createVectorLayer('Restricted', 'Polygon', fields)
-        dp = layer.dataProvider()
         features = []
 
         for r in self.getAirport().getRestricted():
@@ -253,6 +266,7 @@ class ProjectGenerator:
         return layer
 
     def _generateTerrain(self, group, airspace, feedback):
+        """Generate the terrain."""
         # Get the clipping bounds
         perimeter, buffer = self._getAirspace(airspace)
         # self._addLayerToGroup(airspace, group)
@@ -278,9 +292,10 @@ class ProjectGenerator:
 
         # Clean up unused layers
         for l in [mergedDem, clippedDem, contours]:
-            del(l)
+            del l
 
     def _getAirspace(self, airspace):
+        """Generate the Airspace layer."""
         # Perimeter
         result = processing.run('qgis:polygonstolines', {
             'INPUT': airspace,
@@ -301,6 +316,7 @@ class ProjectGenerator:
         return (perimeter, buffer)
 
     def _getCleanContours(self, contours, perimeter, airspace):
+        """Get the cleaned contours."""
         # Simplify the contours
         result = processing.run('qgis:simplifygeometries', {
             'INPUT': contours,
@@ -360,15 +376,17 @@ class ProjectGenerator:
         final = result['OUTPUT']
         final.setName('Contours - Final')
 
-        # Styling 
+        # Styling
         final.renderer().symbol().setColor(QColor.fromRgb(0xff, 0x9e, 0x17))
 
         return final
 
     def _getContourInterval(self):
+        """Get the contour interval (in metres)."""
         return self._config.contourInterval
 
     def _getElevationData(self, boundingLayer, feedback):
+        """Get the elevation layers."""
         demFiles = getDemFromLayer(self.getDemsPath(), boundingLayer)
 
         airportPath = self.getAirportPath()
@@ -413,7 +431,8 @@ class ProjectGenerator:
         return (merged, clipped, contours)
 
     def _getWater(self, airspace, buffer):
-        gshhsPath = self._config.gshhsPath 
+        """Get the water layer."""
+        gshhsPath = self._config.gshhsPath
 
         coastlines = QgsVectorLayer(os.path.join(gshhsPath, 'GSHHS_shp/f/GSHHS_f_L1.shp'), 'Coastline')
         lakes = QgsVectorLayer(os.path.join(gshhsPath, 'GSHHS_shp/f/GSHHS_f_L2.shp'), 'Lakes')
@@ -495,8 +514,9 @@ class ProjectGenerator:
         return water
 
     def _normalizeContours(self, contours, elevation):
+        """Normalize the contours."""
         # Calculate zonal statistics
-        result = processing.run('qgis:zonalstatistics', {
+        processing.run('qgis:zonalstatistics', {
             'INPUT_RASTER': elevation,
             'INPUT_VECTOR': contours,
             'RASTER_BAND': 1,
@@ -513,6 +533,3 @@ class ProjectGenerator:
         # Add a virtual field containing the normalised height to the altitude interval
         field = QgsField('elevation', QVariant.Double)
         contours.addExpressionField('floor(_mean / %(interval)f) * %(interval)f' % {'interval': contourInterval}, field)
-
-    def _setGroupPosition(self, group, position):
-        root = QgsProject.instance().layerTreeRoot()
