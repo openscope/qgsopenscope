@@ -40,8 +40,8 @@ deb-src https://qgis.org/ubuntu-ltr bionic main
 
 Update the packages and install
 ``` bash
-# Add the key
-gpg --export --armor 51F523511C7028C3 | sudo apt-key add -
+# Add the key, as provided by the QGIS instructions
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key <KEY>
 
 # Update the packages
 sudo apt-get update
