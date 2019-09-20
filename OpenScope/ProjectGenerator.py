@@ -15,7 +15,7 @@ from qgis.utils import iface
 import processing # pylint: disable=import-error
 from .dem import getDemFromLayer
 
-MEMORY_OUTPUT = 'memory:'
+_MEMORY_OUTPUT = 'memory:'
 
 class ProjectGeneratorConfig:
     """The configuration options passed to the ProjectGenerator constructor."""
@@ -301,7 +301,7 @@ class ProjectGenerator:
         # Perimeter
         result = processing.run('qgis:polygonstolines', {
             'INPUT': airspace,
-            'OUTPUT': MEMORY_OUTPUT
+            'OUTPUT': _MEMORY_OUTPUT
         })
         perimeter = result['OUTPUT']
         perimeter.setName('Perimeter')
@@ -309,7 +309,7 @@ class ProjectGenerator:
         # Buffer the airspace
         result = processing.run('qgis:buffer', {
             'INPUT': airspace,
-            'OUTPUT': MEMORY_OUTPUT,
+            'OUTPUT': _MEMORY_OUTPUT,
             'DISTANCE': 0.005
         })
         buffer = result['OUTPUT']
@@ -323,7 +323,7 @@ class ProjectGenerator:
         result = processing.run('qgis:simplifygeometries', {
             'INPUT': contours,
             'TOLERANCE': 0.002,
-            'OUTPUT': MEMORY_OUTPUT
+            'OUTPUT': _MEMORY_OUTPUT
         })
         simplified = result['OUTPUT']
         simplified.setName('Contours - Simplified')
@@ -331,7 +331,7 @@ class ProjectGenerator:
         # Merge with perimeter
         result = processing.run('qgis:mergevectorlayers', {
             'LAYERS': [simplified, perimeter],
-            'OUTPUT': MEMORY_OUTPUT
+            'OUTPUT': _MEMORY_OUTPUT
         })
         merged = result['OUTPUT']
         merged.setName('Contours - Merged')
@@ -339,7 +339,7 @@ class ProjectGenerator:
         # Polygonise
         result = processing.run('qgis:polygonize', {
             'INPUT': merged,
-            'OUTPUT': MEMORY_OUTPUT,
+            'OUTPUT': _MEMORY_OUTPUT,
         })
         polygons = result['OUTPUT']
         polygons.setName('Contours - Polygons')
@@ -351,7 +351,7 @@ class ProjectGenerator:
 
         result = processing.run('qgis:eliminateselectedpolygons', {
             'INPUT': polygons,
-            'OUTPUT': MEMORY_OUTPUT,
+            'OUTPUT': _MEMORY_OUTPUT,
             'MODE': 2 # Largest common boundary
         })
         cleaned = result['OUTPUT']
@@ -364,7 +364,7 @@ class ProjectGenerator:
         # Clip to airspace
         result = processing.run('qgis:clip', {
             'INPUT': cleaned,
-            'OUTPUT': MEMORY_OUTPUT,
+            'OUTPUT': _MEMORY_OUTPUT,
             'OVERLAY': airspace
         })
         clipped = result['OUTPUT']
@@ -373,7 +373,7 @@ class ProjectGenerator:
         # Multipart to single part
         result = processing.run('qgis:multiparttosingleparts', {
             'INPUT': clipped,
-            'OUTPUT': MEMORY_OUTPUT
+            'OUTPUT': _MEMORY_OUTPUT
         })
         final = result['OUTPUT']
         final.setName('Contours - Final')
@@ -443,14 +443,14 @@ class ProjectGenerator:
         result = processing.run('qgis:clip', {
             'INPUT': coastlines,
             'OVERLAY': buffer,
-            'OUTPUT': MEMORY_OUTPUT
+            'OUTPUT': _MEMORY_OUTPUT
         })
         clipped_coastlines = result['OUTPUT']
 
         result = processing.run('qgis:clip', {
             'INPUT': lakes,
             'OVERLAY': buffer,
-            'OUTPUT': MEMORY_OUTPUT
+            'OUTPUT': _MEMORY_OUTPUT
         })
         clipped_lakes = result['OUTPUT']
 
@@ -458,7 +458,7 @@ class ProjectGenerator:
         result = processing.run('qgis:simplifygeometries', {
             'INPUT': clipped_coastlines,
             'TOLERANCE': 0.002,
-            'OUTPUT': MEMORY_OUTPUT
+            'OUTPUT': _MEMORY_OUTPUT
         })
         cleaned = result['OUTPUT']
 
@@ -470,14 +470,14 @@ class ProjectGenerator:
         result = processing.run('qgis:difference', {
             'INPUT': buffer,
             'OVERLAY': cleaned,
-            'OUTPUT': MEMORY_OUTPUT
+            'OUTPUT': _MEMORY_OUTPUT
         })
         difference = result['OUTPUT']
 
         # Merge sea with lakes
         result = processing.run('qgis:mergevectorlayers', {
             'LAYERS': [difference, clipped_lakes],
-            'OUTPUT': MEMORY_OUTPUT
+            'OUTPUT': _MEMORY_OUTPUT
         })
         merged_water = result['OUTPUT']
 
@@ -485,14 +485,14 @@ class ProjectGenerator:
         result = processing.run('qgis:clip', {
             'INPUT': merged_water,
             'OVERLAY': airspace,
-            'OUTPUT': MEMORY_OUTPUT
+            'OUTPUT': _MEMORY_OUTPUT
         })
         clipped = result['OUTPUT']
 
         # Multipart to single part
         result = processing.run('qgis:multiparttosingleparts', {
             'INPUT': clipped,
-            'OUTPUT': MEMORY_OUTPUT
+            'OUTPUT': _MEMORY_OUTPUT
         })
         water = result['OUTPUT']
         water.setName('Water')
