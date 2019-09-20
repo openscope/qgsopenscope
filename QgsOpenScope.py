@@ -23,19 +23,22 @@
  *                                                                         *
  ***************************************************************************/
 """
+import os.path
+
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication, QFileDialog, QMessageBox
-from qgis.core import QgsProject
+
+from qgis.core import QgsProject, QgsVectorFileWriter
+
+import processing # pylint: disable=import-error
 
 # Initialize Qt resources from file resources.py
-from .resources import *
+from .resources import * # pylint: disable=wildcard-import,unused-wildcard-import
+
 # Import the code for the dialog
 from .QgsOpenScope_dialog import QgsOpenScopeDialog
-import os.path
-import json
-import processing
-from qgis.core import QgsProject, QgsVectorFileWriter
+
 from .OpenScope.AirspaceModel import AirspaceModel
 from .OpenScope.FixModel import FixModel
 from .OpenScope.MapModel import MapModel
@@ -43,6 +46,8 @@ from .OpenScope.RestrictedModel import RestrictedModel
 
 class QgsOpenScope:
     """QGIS Plugin Implementation."""
+
+    dlg = None
 
     def __init__(self, iface):
         """Constructor.
@@ -92,17 +97,19 @@ class QgsOpenScope:
         return QCoreApplication.translate('QgsOpenScope', message)
 
 
+    # pylint: disable=too-many-arguments
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None
+        ):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -169,7 +176,7 @@ class QgsOpenScope:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/QgsOpenScope/icon.png'
+        #icon_path = ':/plugins/QgsOpenScope/icon.png'
         self.add_action(
             None,
             text=self.tr(u'Load Airport'),
@@ -231,7 +238,7 @@ class QgsOpenScope:
 
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
+        if self.first_start:
             self.first_start = False
             self.dlg = QgsOpenScopeDialog()
 
@@ -247,15 +254,16 @@ class QgsOpenScope:
 
 
     def copyToClipboard(self, text):
+        """Copies the specified text to the clipboard."""
         cb = QApplication.clipboard()
-        cb.clear(mode=cb.Clipboard )
-        cb.setText(text, mode=cb.Clipboard)        
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(text, mode=cb.Clipboard)
 
     def exportAirspace(self):
-        root = self.iface.layerTreeView()
+        """Exports the Airspace features as JSON."""
         airspaces = QgsProject.instance().mapLayersByName('Airspace')
 
-        if len(airspaces) == 0:
+        if not airspaces:
             QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find a \'Airspace\' layer.')
             return
 
@@ -263,10 +271,10 @@ class QgsOpenScope:
         QMessageBox.information(None, 'QgsOpenScope', 'Airspace JSON has been copied to the clipboard.')
 
     def exportFixes(self):
-        root = self.iface.layerTreeView()
+        """Exports the Fixes features as JSON."""
         fixes = QgsProject.instance().mapLayersByName('Fixes')
 
-        if len(fixes) == 0:
+        if not fixes:
             QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find a \'Fixes\' layer.')
             return
 
@@ -274,10 +282,10 @@ class QgsOpenScope:
         QMessageBox.information(None, 'QgsOpenScope', 'Fixes JSON has been copied to the clipboard.')
 
     def exportRestricted(self):
-        root = self.iface.layerTreeView()
+        """Exports the Restricted Airspace features as JSON."""
         restricted = QgsProject.instance().mapLayersByName('Restricted')
 
-        if len(restricted) == 0:
+        if not restricted:
             QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find a \'Restricted\' layer.')
             return
 
@@ -285,29 +293,35 @@ class QgsOpenScope:
         QMessageBox.information(None, 'QgsOpenScope', 'Restricted Airspace JSON has been copied to the clipboard.')
 
     def exportMaps(self):
+        """Exports the Map layers as JSON."""
         mapsGroup = QgsProject.instance().layerTreeRoot().findGroup('Maps')
 
         if not mapsGroup:
             QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find any Map layers.')
             return
 
-        layers = list(map(lambda x : x.layer(), mapsGroup.children()))
+        layers = list(map(lambda x: x.layer(), mapsGroup.children()))
 
         self.copyToClipboard(MapModel.export(layers))
         QMessageBox.information(None, 'QgsOpenScope', 'Map JSON has been copied to the clipboard.')
 
     def exportTerrain(self):
+        """Exports the Terrain as GeoJSON."""
         selected = self.iface.layerTreeView().selectedLayers()
 
-        if len(selected) == 0:
+        if not selected:
             QMessageBox.information(None, 'QgsOpenScope', 'At least one terrain layer must be selected for export.')
             return
-        
+
         for layer in selected:
             if layer.fields().indexFromName('elevation') == -1:
-                QMessageBox.information(None, 'QgsOpenScope', 'The \'%s\' layer doesn\'t have an elevation attribute.' % layer.name())
+                QMessageBox.information(
+                    None,
+                    'QgsOpenScope',
+                    'The \'%s\' layer doesn\'t have an elevation attribute.' % layer.name()
+                )
                 return
-        
+
         fileName, _ = QFileDialog.getSaveFileName(None, 'Save openScope terrain', '', 'Terrain Files (*.geojson)')
         if not fileName:
             return
@@ -325,10 +339,10 @@ class QgsOpenScope:
             'utf-8',
             merged.crs(),
             'GeoJson',
-            attributes = [
+            attributes=[
                 merged.fields().indexFromName('elevation') # Only the elevation layer
             ],
-            layerOptions = [
+            layerOptions=[
                 'COORDINATE_PRECISION=10'
             ]
         )

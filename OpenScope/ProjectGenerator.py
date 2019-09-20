@@ -12,7 +12,7 @@ from qgis.core import (
     QgsVectorLayer, QgsVectorLayerSimpleLabeling, QgsVectorFileWriter
 )
 from qgis.utils import iface
-import processing
+import processing # pylint: disable=import-error
 from .dem import getDemFromLayer
 
 MEMORY_OUTPUT = 'memory:'
@@ -157,7 +157,9 @@ class ProjectGenerator:
 
         # Labeling
         settings = QgsPalLayerSettings()
-        settings.fieldName = 'coalesce("name", \'No Name\') || \' - \' || \'FL\' || "floor" || \' to \' || \'FL\' || "ceiling" || \' (Class \' || "airspace_class" || \')\''
+        settings.fieldName = """coalesce(\"name\", 'No Name') || ' - ' ||
+        'FL' || \"floor\" || ' to ' || 'FL' || \"ceiling\" ||
+        ' (Class ' || \"airspace_class\" || ')'"""
         settings.isExpression = True
         settings.placement = QgsPalLayerSettings.PerimeterCurved
         layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))

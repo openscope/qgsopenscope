@@ -27,11 +27,11 @@
 import os
 import tempfile
 
-from qgis.core import QgsMessageLog, QgsProcessingFeedback, QgsProject, QgsVectorLayer, QgsSettings
-from qgis.utils import iface
+from qgis.core import QgsProject, QgsSettings
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox
+
 from .OpenScope.AirportModel import AirportModel
 from .OpenScope.ProjectGenerator import ProjectGenerator, ProjectGeneratorConfig
 
@@ -42,6 +42,8 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 
 class QgsOpenScopeDialog(QtWidgets.QDialog, FORM_CLASS):
+    """The Load Airport dialog."""
+
     _airport = None
 
     def __init__(self, parent=None):
@@ -63,8 +65,9 @@ class QgsOpenScopeDialog(QtWidgets.QDialog, FORM_CLASS):
         self.butSelectGSHHS.clicked.connect(self._butSelectGSHHSClicked)
 
         self.buttonBox.accepted.connect(self._buttonBoxAccepted)
-    
+
     def _buttonBoxAccepted(self):
+        """Handler for when the button box is accepted."""
         project = QgsProject.instance()
 
         project.clear()
@@ -79,13 +82,13 @@ class QgsOpenScopeDialog(QtWidgets.QDialog, FORM_CLASS):
 
         if not os.path.isfile(fileName):
             QMessageBox.warning('Airport File \'%s\' does not exist.' % fileName)
-            return False
-        elif not os.path.isdir(config.tmpPath):
+            return
+        if not os.path.isdir(config.tmpPath):
             QMessageBox.warning('The path \'%s\' does not exist.' % config.tmpPath)
-            return False
-        elif not os.path.isdir(config.gshhsPath):
+            return
+        if not os.path.isdir(config.gshhsPath):
             QMessageBox.warning('The path \'%s\' does not exist.' % config.gshhsPath)
-            return False
+            return
 
         self._saveSetting('txtAirportPath', fileName)
         self._saveSetting('txtTempPath', config.tmpPath)
@@ -94,29 +97,49 @@ class QgsOpenScopeDialog(QtWidgets.QDialog, FORM_CLASS):
         proj = ProjectGenerator(airport, config)
         proj.populateProject()
 
-    def _butSelectAirportClicked(self, e):
+    def _butSelectAirportClicked(self, _e):
+        """Handler for when the Select Airport button is clicked."""
         currentPath = self.txtAirportPath.text()
         if not os.path.exists(currentPath):
             currentPath = None
 
-        airportFile, _ = QFileDialog.getOpenFileName(None, 'Load openScope Airport', currentPath, 'Airport Files(*.json)')
+        airportFile, _ = QFileDialog.getOpenFileName(
+            None,
+            'Load openScope Airport',
+            currentPath,
+            'Airport Files(*.json)'
+        )
+
         if airportFile:
             self.txtAirportPath.setText(airportFile)
             self._saveSetting('txtAirportPath', airportFile)
 
-    def _butSelectGSHHSClicked(self, e):
-        directory = QFileDialog.getExistingDirectory(None, 'Select GSHHS Directory', self.txtGSHHS.text())
+    def _butSelectGSHHSClicked(self, _e):
+        """Handler for when the Select GSHHG button is clicked."""
+        directory = QFileDialog.getExistingDirectory(
+            None,
+            'Select GSHHS Directory',
+            self.txtGSHHS.text()
+        )
+
         if directory:
             self.txtGSHHS.setText(directory)
             self._saveSetting('txtGSHHS', directory)
-    
-    def _butSelectTempClicked(self, e):
-        directory = QFileDialog.getExistingDirectory(None, 'Select Temp Directory', self.txtTempPath.text())
+
+    def _butSelectTempClicked(self, _e):
+        """Handler for when the Select Temp button is clicked."""
+        directory = QFileDialog.getExistingDirectory(
+            None,
+            'Select Temp Directory',
+            self.txtTempPath.text()
+        )
+
         if directory:
             self.txtTempPath.setText(directory)
             self._saveSetting('txtTempPath', directory)
 
     def _readSetting(self, key, defaultValue):
+        """Read the setting with specified key."""
         s = QgsSettings()
         return s.value('%(plugin)s/%(key)s' % {
             'plugin': type(self).__name__,
@@ -124,11 +147,9 @@ class QgsOpenScopeDialog(QtWidgets.QDialog, FORM_CLASS):
         }, defaultValue)
 
     def _saveSetting(self, key, value):
+        """Saves  the setting with specified key."""
         s = QgsSettings()
         s.setValue('%(plugin)s/%(key)s' % {
             'plugin': type(self).__name__,
             'key': key
         }, value)
-
-    def _onProgressChanged(self, e):
-        print(self, e)
