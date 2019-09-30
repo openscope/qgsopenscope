@@ -86,6 +86,6 @@ Plugins -> QgsOpenScope -> Generate Terrain
 4. Select the airport file for which the terrain will be generated
 Click OK, and wait. The plugin may take several minutes to run, depending on your internet connection and hardware
 
-Exporting data can also be done.@
+Exporting data can also be done:
 * Simply use the Export ... option and it will copy the generated JSON to the clipboard
 * Terrain is exported by selecting which terrain layers you want, and using the Export function. It will ask you where you want to save the GeoJSON file
