@@ -1,6 +1,5 @@
 """The project generator."""
 import os
-import tempfile
 from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QColor
 from qgis.core import (
@@ -8,62 +7,26 @@ from qgis.core import (
     QgsGeometry,
     QgsMarkerSymbol,
     QgsPalLayerSettings, QgsProject,
-    QgsRasterLayer, QgsRectangle,
-    QgsVectorLayer, QgsVectorLayerSimpleLabeling, QgsVectorFileWriter
+    QgsRasterLayer,
+    QgsVectorLayer, QgsVectorLayerSimpleLabeling
 )
-from qgis.utils import iface
 import processing # pylint: disable=import-error
+from .GeneratorBase import GeneratorBase, GeneratorConfigBase
 from .dem import getDemFromLayer
 
 _MEMORY_OUTPUT = 'memory:'
 
-class ProjectGeneratorConfig:
+class ProjectGeneratorConfig(GeneratorConfigBase):
     """The configuration options passed to the ProjectGenerator constructor."""
 
     contourInterval = 304.8
 
     gshhsPath = None
 
-    tmpPath = tempfile.gettempdir()
-
-class ProjectGenerator:
+class ProjectGenerator(GeneratorBase):
     """The project generator."""
 
-    _airport = None
-
-    _config = None
-
-#------------------- Lifecycle -------------------
-
-    def __init__(self, airport, config):
-        self._airport = airport
-        self._config = config
-
 #------------------- Public -------------------
-
-    def getAirport(self):
-        """Gets the AirportModel."""
-        return self._airport
-
-    def getAirportPath(self):
-        """Gets the location of where temporary files for the airport should be stored."""
-        path = os.path.join(self.getTempPath(), self.getIcao())
-        os.makedirs(path, exist_ok=True)
-        return path
-
-    def getDemsPath(self):
-        """Gets the location of where DEM files should be stored."""
-        path = os.path.join(self.getTempPath(), 'dems')
-        os.makedirs(path, exist_ok=True)
-        return path
-
-    def getIcao(self):
-        """Gets the ICAO code of the airport."""
-        return self.getAirport().getIcao()
-
-    def getTempPath(self):
-        """Gets the temporary directory."""
-        return os.path.join(self._config.tmpPath, 'qgsopenscope')
 
     def populateProject(self, _feedback=None):
         """Populates the project."""
@@ -74,56 +37,17 @@ class ProjectGenerator:
         self._generateFixes(root)
         self._generateRestricted(root)
 
-        maps = self._addGroup('Maps')
-        self._addGroup('Terrain')
+        maps = self.addGroup('Maps')
+        self.addGroup('Terrain')
 
         self._generateAirspace(root)
         self._generateAirspace(root, True)
         self._generateMaps(maps)
         # self._generateTerrain(terrain, airspaceLayer, feedback)
 
-        self._zoomToAllLayers()
+        self.zoomToAllLayers()
 
 #------------------- Private -------------------
-
-    def _addGroup(self, name, parent=None):
-        """Add a group to the project's layer tree."""
-        if not parent:
-            parent = QgsProject.instance().layerTreeRoot()
-        return parent.addGroup(name)
-
-    def _addLayerToGroup(self, layer, group):
-        """Add the layer to the specified group."""
-        QgsProject.instance().addMapLayer(layer, False)
-        group.addLayer(layer)
-
-    def _createMemoryLayer(self, name, layerType, fields=None):
-        """Creates a new in-memory QgsVectorLayer."""
-        layer = QgsVectorLayer('%s?crs=epsg:4326' % layerType, name, 'memory')
-
-        if fields is not None:
-            layer.dataProvider().addAttributes(fields)
-            layer.updateFields()
-
-        return layer
-
-    def _createVectorLayer(self, name, layerType, fields=None, fileName=None):
-        """Creates a new QgsVectorLayer."""
-        if not fileName:
-            fileName = name
-        fileName = os.path.join(self.getAirportPath(), '%s.gpkg' % fileName)
-
-        layer = self._createMemoryLayer(name, layerType, fields)
-
-        QgsVectorFileWriter.writeAsVectorFormat(
-            layer,
-            fileName,
-            'utf-8',
-            layer.crs(),
-            'GPKG'
-        )
-
-        return QgsVectorLayer(fileName, name)
 
     def _generateAirspace(self, group, hiddenAirspace=False):
         """Generate the Airspace layer."""
@@ -134,7 +58,7 @@ class ProjectGenerator:
             QgsField('ceiling', QVariant.Int)
         ]
         layerName = 'Airspace (Hidden)' if hiddenAirspace else 'Airspace'
-        layer = self._createVectorLayer(layerName, 'Polygon', fields)
+        layer = self.createVectorLayer(layerName, 'Polygon', fields)
         features = []
 
         for a in self.getAirport().getAirspace(hiddenAirspace):
@@ -165,7 +89,7 @@ class ProjectGenerator:
         layer.setLabelsEnabled(True)
         layer.triggerRepaint()
 
-        self._addLayerToGroup(layer, group)
+        self.addLayerToGroup(layer, group)
 
         return layer
 
@@ -174,7 +98,7 @@ class ProjectGenerator:
         fields = [
             QgsField('name', QVariant.String),
         ]
-        layer = self._createVectorLayer('Fixes', 'Point', fields)
+        layer = self.createVectorLayer('Fixes', 'Point', fields)
         features = []
 
         for p in self.getAirport().getFixes():
@@ -208,12 +132,12 @@ class ProjectGenerator:
         layer.setLabelsEnabled(True)
         layer.triggerRepaint()
 
-        self._addLayerToGroup(layer, group)
+        self.addLayerToGroup(layer, group)
 
     def _generateMaps(self, group):
         """Generates the Map layers."""
         for m in self.getAirport().getMaps():
-            layer = self._createVectorLayer(m.name, 'LineString', fileName='Map - %s' % m.name)
+            layer = self.createVectorLayer(m.name, 'LineString', fileName='Map - %s' % m.name)
             features = []
 
             for l in m.lines:
@@ -227,7 +151,7 @@ class ProjectGenerator:
             sym.setColor(QColor.fromRgb(0x00, 0x00, 0x00))
             sym.setWidth(0.33)
 
-            self._addLayerToGroup(layer, group)
+            self.addLayerToGroup(layer, group)
 
     def _generateRestricted(self, group):
         """Generate the Restricted layer."""
@@ -235,7 +159,7 @@ class ProjectGenerator:
             QgsField('name', QVariant.String),
             QgsField('height', QVariant.String),
         ]
-        layer = self._createVectorLayer('Restricted', 'Polygon', fields)
+        layer = self.createVectorLayer('Restricted', 'Polygon', fields)
         features = []
 
         for r in self.getAirport().getRestricted():
@@ -262,7 +186,7 @@ class ProjectGenerator:
         layer.setLabelsEnabled(True)
         layer.triggerRepaint()
 
-        self._addLayerToGroup(layer, group)
+        self.addLayerToGroup(layer, group)
 
         return layer
 
@@ -276,7 +200,7 @@ class ProjectGenerator:
 
         # Get the water
         water = self._getWater(airspace, buffer)
-        self._addLayerToGroup(water, group)
+        self.addLayerToGroup(water, group)
 
         # Height data
         mergedDem, clippedDem, contours = self._getElevationData(buffer, feedback)
@@ -286,7 +210,7 @@ class ProjectGenerator:
 
         # Clean the contours
         cleaned = self._getCleanContours(contours, perimeter, airspace)
-        self._addLayerToGroup(cleaned, group)
+        self.addLayerToGroup(cleaned, group)
 
         # Normalize the contours
         self._normalizeContours(cleaned, clippedDem)
@@ -534,17 +458,3 @@ class ProjectGenerator:
         # Add a virtual field containing the normalised height to the altitude interval
         field = QgsField('elevation', QVariant.Double)
         contours.addExpressionField('floor(_mean / %(interval)f) * %(interval)f' % {'interval': contourInterval}, field)
-
-    def _zoomToAllLayers(self):
-        """Zoom to the buffered area and redraw"""
-        canvas = iface.mapCanvas()
-        bounds = QgsRectangle()
-
-        for item in QgsProject.instance().layerTreeRoot().findLayers():
-            extent = item.layer().extent()
-
-            if not extent.isEmpty():
-                bounds.combineExtentWith(extent)
-
-        canvas.setExtent(bounds)
-        canvas.refreshAllLayers()
