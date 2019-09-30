@@ -27,7 +27,7 @@ class AirportModel:
 
         return [
             AirspaceModel(item)
-            for item in self._airport[sectionName]
+            for item in self._airport.get(sectionName, [])
         ]
 
     def getIcao(self):
