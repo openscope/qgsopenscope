@@ -76,8 +76,16 @@ It's advisable to install the experimental QGIS Plugin Reloader plugin. This wil
 Before using the plugin, the GSHHG shapefiles need to be downloaded and extracted. The plugin only uses files in the `GSHHS_shp/f` directory.
 
 Once the plugin has been installed, it can be found in the `Plugins` menu.
-1. Select Plugins -> QgsOpenScope -> Load Aiport
-2. Select the airport file you want to load
-3. Change the temp directory if desired. Elevation data will be downloaded here, as well as any temporary files
-4. Select the GSHHG path. It must contain the `GSHHS_shp` directory
-5. Click OK, and wait. The plugin may take several minutes to run, depending on your internet connection and hardware
+1. Configure the plugin settings, making sure the GSHHS path is configured:
+Plugins -> QgsOpenScope -> QgsOpenScope
+2. Select Plugins -> QgsOpenScope -> Load Aiport
+3. Select the airport file you want to load
+This will load all the layers from the `airport.json` file
+3. Generate the terrain:
+Plugins -> QgsOpenScope -> Generate Terrain
+4. Select the airport file for which the terrain will be generated
+Click OK, and wait. The plugin may take several minutes to run, depending on your internet connection and hardware
+
+Exporting data can also be done.@
+* Simply use the Export ... option and it will copy the generated JSON to the clipboard
+* Terrain is exported by selecting which terrain layers you want, and using the Export function. It will ask you where you want to save the GeoJSON file
