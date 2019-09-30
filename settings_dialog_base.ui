@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>QgsOpenScopeDialogBase</class>
- <widget class="QDialog" name="QgsOpenScopeDialogBase">
+ <class>SettingsDialogBase</class>
+ <widget class="QDialog" name="SettingsDialogBase">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>QgsOpenScope</string>
+   <string>QgsOpenScope Settings</string>
   </property>
   <property name="modal">
    <bool>false</bool>
@@ -53,7 +53,7 @@
          <string/>
         </property>
         <property name="placeholderText">
-         <string>Airport File</string>
+         <string>Airport Path</string>
         </property>
         <property name="clearButtonEnabled">
          <bool>false</bool>
@@ -200,7 +200,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>QgsOpenScopeDialogBase</receiver>
+   <receiver>SettingsDialogBase</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -216,7 +216,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>QgsOpenScopeDialogBase</receiver>
+   <receiver>SettingsDialogBase</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

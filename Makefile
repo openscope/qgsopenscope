@@ -40,15 +40,15 @@ LOCALES =
 # translation
 SOURCES = \
 	__init__.py \
-	QgsOpenScope.py QgsOpenScope_dialog.py
+	QgsOpenScope.py settings_dialog.py
 
 PLUGINNAME = QgsOpenScope
 
 PY_FILES = \
 	__init__.py \
-	QgsOpenScope.py QgsOpenScope_dialog.py
+	QgsOpenScope.py settings_dialog.py
 
-UI_FILES = QgsOpenScope_dialog_base.ui
+UI_FILES = settings_dialog_base.ui
 
 EXTRAS = metadata.txt icon.png
 

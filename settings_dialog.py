@@ -27,28 +27,24 @@
 import os
 import tempfile
 
-from qgis.core import QgsProject, QgsSettings
+from qgis.core import QgsSettings
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox
-
-from .OpenScope.AirportModel import AirportModel
-from .OpenScope.ProjectGenerator import ProjectGenerator, ProjectGeneratorConfig
-
+from qgis.PyQt.QtWidgets import QFileDialog
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'QgsOpenScope_dialog_base.ui'))
+    os.path.dirname(__file__), 'settings_dialog_base.ui'))
 
 
-class QgsOpenScopeDialog(QtWidgets.QDialog, FORM_CLASS):
-    """The Load Airport dialog."""
+class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
+    """The dialog used for configuring settings."""
 
     _airport = None
 
     def __init__(self, parent=None):
         """Constructor."""
-        super(QgsOpenScopeDialog, self).__init__(parent)
+        super(SettingsDialog, self).__init__(parent)
         # Set up the user interface from Designer through FORM_CLASS.
         # After self.setupUi() you can access any designer object by doing
         # self.<objectname>, and you can use autoconnect slots - see
@@ -56,63 +52,38 @@ class QgsOpenScopeDialog(QtWidgets.QDialog, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
 
-        self.txtAirportPath.setText(self._readSetting('txtAirportPath', ''))
-        self.txtTempPath.setText(self._readSetting('txtTempPath', tempfile.tempdir))
-        self.txtGSHHS.setText(self._readSetting('txtGSHHS', ''))
+        self.txtAirportPath.setText(SettingsDialog.getAirportPath())
+        self.txtTempPath.setText(SettingsDialog.getTempPath())
+        self.txtGSHHS.setText(SettingsDialog.getGSHHSPath())
 
         self.butSelectAirport.clicked.connect(self._butSelectAirportClicked)
         self.butSelectTemp.clicked.connect(self._butSelectTempClicked)
         self.butSelectGSHHS.clicked.connect(self._butSelectGSHHSClicked)
 
         self.buttonBox.accepted.connect(self._buttonBoxAccepted)
+        self.buttonBox.rejected.connect(self._buttonBoxRejected)
 
     def _buttonBoxAccepted(self):
         """Handler for when the button box is accepted."""
-        project = QgsProject.instance()
 
-        project.clear()
+        SettingsDialog.setAirportPath(self.txtAirportPath.text())
+        SettingsDialog.setGSHHSPath(self.txtGSHHS.text())
+        SettingsDialog.setTempPath(self.txtTempPath.text())
 
-        config = ProjectGeneratorConfig()
-        config.tmpPath = self.txtTempPath.text() or tempfile.tempdir
-        config.gshhsPath = self.txtGSHHS.text() or None
-        config.contourInterval = 304.8
-
-        fileName = self.txtAirportPath.text()
-        airport = AirportModel(fileName)
-
-        if not os.path.isfile(fileName):
-            QMessageBox.warning('Airport File \'%s\' does not exist.' % fileName)
-            return
-        if not os.path.isdir(config.tmpPath):
-            QMessageBox.warning('The path \'%s\' does not exist.' % config.tmpPath)
-            return
-        if not os.path.isdir(config.gshhsPath):
-            QMessageBox.warning('The path \'%s\' does not exist.' % config.gshhsPath)
-            return
-
-        self._saveSetting('txtAirportPath', fileName)
-        self._saveSetting('txtTempPath', config.tmpPath)
-        self._saveSetting('txtGSHHS', config.gshhsPath)
-
-        proj = ProjectGenerator(airport, config)
-        proj.populateProject()
+    def _buttonBoxRejected(self):
+        """Handler for when the button box is accepted."""
 
     def _butSelectAirportClicked(self, _e):
         """Handler for when the Select Airport button is clicked."""
-        currentPath = self.txtAirportPath.text()
-        if not os.path.exists(currentPath):
-            currentPath = None
-
-        airportFile, _ = QFileDialog.getOpenFileName(
+        directory = QFileDialog.getExistingDirectory(
             None,
-            'Load openScope Airport',
-            currentPath,
-            'Airport Files(*.json)'
+            'Select Airport Directory',
+            self.txtAirportPath.text()
         )
 
-        if airportFile:
-            self.txtAirportPath.setText(airportFile)
-            self._saveSetting('txtAirportPath', airportFile)
+        if directory:
+            self.txtAirportPath.setText(directory)
+            SettingsDialog.setAirportPath(directory)
 
     def _butSelectGSHHSClicked(self, _e):
         """Handler for when the Select GSHHG button is clicked."""
@@ -124,7 +95,7 @@ class QgsOpenScopeDialog(QtWidgets.QDialog, FORM_CLASS):
 
         if directory:
             self.txtGSHHS.setText(directory)
-            self._saveSetting('txtGSHHS', directory)
+            SettingsDialog.setGSHHSPath(directory)
 
     def _butSelectTempClicked(self, _e):
         """Handler for when the Select Temp button is clicked."""
@@ -136,20 +107,48 @@ class QgsOpenScopeDialog(QtWidgets.QDialog, FORM_CLASS):
 
         if directory:
             self.txtTempPath.setText(directory)
-            self._saveSetting('txtTempPath', directory)
+            SettingsDialog.setTempPath(directory)
 
-    def _readSetting(self, key, defaultValue):
+    @staticmethod
+    def _readSetting(key, defaultValue=None):
         """Read the setting with specified key."""
         s = QgsSettings()
-        return s.value('%(plugin)s/%(key)s' % {
-            'plugin': type(self).__name__,
-            'key': key
-        }, defaultValue)
 
-    def _saveSetting(self, key, value):
+        return s.value('QgsOpenScope/%s' % key, defaultValue)
+
+    @staticmethod
+    def _saveSetting(key, value):
         """Saves  the setting with specified key."""
         s = QgsSettings()
-        s.setValue('%(plugin)s/%(key)s' % {
-            'plugin': type(self).__name__,
-            'key': key
-        }, value)
+
+        s.setValue('QgsOpenScope/%s' % key, value)
+
+    @staticmethod
+    def getAirportPath():
+        """Gets the Airports path"""
+        return SettingsDialog._readSetting('airportPath')
+
+    @staticmethod
+    def getGSHHSPath():
+        """Gets the GSHHS path"""
+        return SettingsDialog._readSetting('gshhsPath')
+
+    @staticmethod
+    def getTempPath():
+        """Gets the temp path"""
+        return SettingsDialog._readSetting('tempPath', tempfile.tempdir)
+
+    @staticmethod
+    def setAirportPath(path):
+        """sets the Airports path"""
+        SettingsDialog._saveSetting('airportPath', path)
+
+    @staticmethod
+    def setGSHHSPath(path):
+        """Sets the GSHHS path"""
+        SettingsDialog._saveSetting('gshhsPath', path)
+
+    @staticmethod
+    def setTempPath(path):
+        """Sets the temp path"""
+        SettingsDialog._saveSetting('tempPath', path)

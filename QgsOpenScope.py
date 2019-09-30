@@ -37,18 +37,18 @@ import processing # pylint: disable=import-error
 from .resources import * # pylint: disable=wildcard-import,unused-wildcard-import
 
 # Import the code for the dialog
-from .QgsOpenScope_dialog import QgsOpenScopeDialog
+from .settings_dialog import SettingsDialog
 
+from .OpenScope.AirportModel import AirportModel
 from .OpenScope.AirspaceModel import AirspaceModel
 from .OpenScope.FixModel import FixModel
 from .OpenScope.MapModel import MapModel
 from .OpenScope.RestrictedModel import RestrictedModel
 from .OpenScope.functions import EXPORT_PRECISION
+from .OpenScope.ProjectGenerator import ProjectGenerator, ProjectGeneratorConfig
 
 class QgsOpenScope:
     """QGIS Plugin Implementation."""
-
-    dlg = None
 
     def __init__(self, iface):
         """Constructor.
@@ -181,7 +181,7 @@ class QgsOpenScope:
         self.add_action(
             None,
             text=self.tr(u'Load Airport'),
-            callback=self.run,
+            callback=self.loadAirport,
             parent=self.iface.mainWindow(),
             add_to_toolbar=False
         )
@@ -220,6 +220,13 @@ class QgsOpenScope:
             parent=self.iface.mainWindow(),
             add_to_toolbar=False
         )
+        self.add_action(
+            None,
+            text='QgsOpenScope Settings',
+            callback=self.showSettingsDialog,
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False
+        )
 
         # will be set False in run()
         self.first_start = True
@@ -232,26 +239,6 @@ class QgsOpenScope:
                 self.tr(u'&QgsOpenScope'),
                 action)
             self.iface.removeToolBarIcon(action)
-
-
-    def run(self):
-        """Run method that performs all the real work"""
-
-        # Create the dialog with elements (after translation) and keep reference
-        # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start:
-            self.first_start = False
-            self.dlg = QgsOpenScopeDialog()
-
-        # show the dialog
-        self.dlg.show()
-        # Run the dialog event loop
-        result = self.dlg.exec_()
-        # See if OK was pressed
-        if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
 
 
     def copyToClipboard(self, text):
@@ -347,3 +334,48 @@ class QgsOpenScope:
                 'COORDINATE_PRECISION=%d' % EXPORT_PRECISION
             ]
         )
+
+    def loadAirport(self):
+        """Loads an airport into the workspace"""
+
+        fileName, _ = QFileDialog.getOpenFileName(
+            None,
+            'Load openScope Airport',
+            SettingsDialog.getAirportPath(),
+            'Airport Files(*.json)',
+        )
+
+        if not fileName:
+            return
+
+        project = QgsProject.instance()
+
+        project.clear()
+
+        config = ProjectGeneratorConfig()
+        config.tmpPath = SettingsDialog.getTempPath()
+        config.contourInterval = 304.8
+
+        airport = AirportModel(fileName)
+
+        if not os.path.isfile(fileName):
+            QMessageBox.warning('Airport File \'%s\' does not exist.' % fileName)
+            return
+        if not os.path.isdir(config.tmpPath):
+            QMessageBox.warning('The path \'%s\' does not exist.' % config.tmpPath)
+            return
+
+        proj = ProjectGenerator(airport, config)
+        proj.populateProject()
+
+    def showSettingsDialog(self):
+        """Show the settings dialog"""
+
+        dlg = SettingsDialog()
+
+        # Show and run the dialog event loop
+        dlg.show()
+        result = dlg.exec_()
+
+        if result:
+            pass
