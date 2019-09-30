@@ -46,6 +46,7 @@ from .OpenScope.MapModel import MapModel
 from .OpenScope.RestrictedModel import RestrictedModel
 from .OpenScope.functions import EXPORT_PRECISION
 from .OpenScope.ProjectGenerator import ProjectGenerator, ProjectGeneratorConfig
+from .OpenScope.TerrainGenerator import TerrainGenerator, TerrainGeneratorConfig
 
 class QgsOpenScope:
     """QGIS Plugin Implementation."""
@@ -182,6 +183,13 @@ class QgsOpenScope:
             None,
             text=self.tr(u'Load Airport'),
             callback=self.loadAirport,
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False
+        )
+        self.add_action(
+            None,
+            text='Generate Terrain',
+            callback=self.generateTerrain,
             parent=self.iface.mainWindow(),
             add_to_toolbar=False
         )
@@ -335,8 +343,29 @@ class QgsOpenScope:
             ]
         )
 
-    def loadAirport(self):
-        """Loads an airport into the workspace"""
+    def generateTerrain(self):
+        """Generates the terrain"""
+
+        airport = self.getAirport()
+
+        if not airport:
+            return
+
+        config = TerrainGeneratorConfig()
+
+        config.gshhsPath = SettingsDialog.getGSHHSPath()
+        config.tmpPath = SettingsDialog.getTempPath()
+        config.contourInterval = 304.8
+
+        terrain = TerrainGenerator(airport, config)
+
+        success, message = terrain.generateTerrain()
+
+        if not success:
+            QMessageBox.warning(None, 'QgsOpenScope', message)
+
+    def getAirport(self):
+        """Prompts the user to select an airport file and returns the AirportModel"""
 
         fileName, _ = QFileDialog.getOpenFileName(
             None,
@@ -346,6 +375,19 @@ class QgsOpenScope:
         )
 
         if not fileName:
+            return None
+        if not os.path.isfile(fileName):
+            QMessageBox.warning(None, 'QgsOpenScope', 'Airport File \'%s\' does not exist.' % fileName)
+            return None
+
+        return AirportModel(fileName)
+
+    def loadAirport(self):
+        """Loads an airport into the workspace"""
+
+        airport = self.getAirport()
+
+        if not airport:
             return
 
         project = QgsProject.instance()
@@ -353,17 +395,8 @@ class QgsOpenScope:
         project.clear()
 
         config = ProjectGeneratorConfig()
+
         config.tmpPath = SettingsDialog.getTempPath()
-        config.contourInterval = 304.8
-
-        airport = AirportModel(fileName)
-
-        if not os.path.isfile(fileName):
-            QMessageBox.warning('Airport File \'%s\' does not exist.' % fileName)
-            return
-        if not os.path.isdir(config.tmpPath):
-            QMessageBox.warning('The path \'%s\' does not exist.' % config.tmpPath)
-            return
 
         proj = ProjectGenerator(airport, config)
         proj.populateProject()
