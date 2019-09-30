@@ -8,7 +8,7 @@ from qgis.core import (
     QgsGeometry,
     QgsMarkerSymbol,
     QgsPalLayerSettings, QgsProject,
-    QgsRasterLayer,
+    QgsRasterLayer, QgsRectangle,
     QgsVectorLayer, QgsVectorLayerSimpleLabeling, QgsVectorFileWriter
 )
 from qgis.utils import iface
@@ -65,7 +65,7 @@ class ProjectGenerator:
         """Gets the temporary directory."""
         return os.path.join(self._config.tmpPath, 'qgsopenscope')
 
-    def populateProject(self, feedback=None):
+    def populateProject(self, _feedback=None):
         """Populates the project."""
         QgsProject.instance().clear()
 
@@ -75,16 +75,14 @@ class ProjectGenerator:
         self._generateRestricted(root)
 
         maps = self._addGroup('Maps')
-        terrain = self._addGroup('Terrain')
+        self._addGroup('Terrain')
 
-        airspaceLayer = self._generateAirspace(root)
+        self._generateAirspace(root)
+        self._generateAirspace(root, True)
         self._generateMaps(maps)
-        self._generateTerrain(terrain, airspaceLayer, feedback)
+        # self._generateTerrain(terrain, airspaceLayer, feedback)
 
-        # Zoom to the buffered area and redraw
-        canvas = iface.mapCanvas()
-        canvas.setExtent(airspaceLayer.extent())
-        canvas.refreshAllLayers()
+        self._zoomToAllLayers()
 
 #------------------- Private -------------------
 
@@ -127,7 +125,7 @@ class ProjectGenerator:
 
         return QgsVectorLayer(fileName, name)
 
-    def _generateAirspace(self, group):
+    def _generateAirspace(self, group, hiddenAirspace=False):
         """Generate the Airspace layer."""
         fields = [
             QgsField('name', QVariant.String),
@@ -135,10 +133,11 @@ class ProjectGenerator:
             QgsField('floor', QVariant.Int),
             QgsField('ceiling', QVariant.Int)
         ]
-        layer = self._createVectorLayer('Airspace', 'Polygon', fields)
+        layerName = 'Airspace (Hidden)' if hiddenAirspace else 'Airspace'
+        layer = self._createVectorLayer(layerName, 'Polygon', fields)
         features = []
 
-        for a in self.getAirport().getAirspace():
+        for a in self.getAirport().getAirspace(hiddenAirspace):
             feature = QgsFeature()
             feature.setGeometry(QgsGeometry.fromPolygonXY([a.poly]))
             feature.setAttributes([
@@ -535,3 +534,17 @@ class ProjectGenerator:
         # Add a virtual field containing the normalised height to the altitude interval
         field = QgsField('elevation', QVariant.Double)
         contours.addExpressionField('floor(_mean / %(interval)f) * %(interval)f' % {'interval': contourInterval}, field)
+
+    def _zoomToAllLayers(self):
+        """Zoom to the buffered area and redraw"""
+        canvas = iface.mapCanvas()
+        bounds = QgsRectangle()
+
+        for item in QgsProject.instance().layerTreeRoot().findLayers():
+            extent = item.layer().extent()
+
+            if not extent.isEmpty():
+                bounds.combineExtentWith(extent)
+
+        canvas.setExtent(bounds)
+        canvas.refreshAllLayers()

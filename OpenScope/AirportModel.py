@@ -20,12 +20,14 @@ class AirportModel:
         with open(path, 'r') as f:
             self._airport = json.load(f)
 
-    def getAirspace(self):
+    def getAirspace(self, hiddenAirspace=False):
         """Gets the list of AirspaceModel objects."""
+
+        sectionName = '_airspace' if hiddenAirspace else 'airspace'
 
         return [
             AirspaceModel(item)
-            for item in self._airport['airspace']
+            for item in self._airport[sectionName]
         ]
 
     def getIcao(self):
