@@ -33,13 +33,16 @@ class TerrainGenerator(GeneratorBase):
 
         terrain = QgsProject.instance().layerTreeRoot().findGroup('Terrain')
 
-        if not terrain:
+        if terrain:
+            for layer in terrain.findLayers():
+                terrain.removeLayer(layer.layer())
+        else:
             terrain = self.addGroup('Terrain')
 
         polygons = self._getSelectedPolygons()
 
         if not polygons:
-            return (False, 'No valud polygons were selected to determine the terrain bounds')
+            return (False, 'No valid polygons were selected to determine the terrain bounds')
 
         self._generateTerrain(terrain, polygons, feedback)
 
