@@ -383,7 +383,7 @@ Are you sure you want to continue?"""
         fileName, _ = QFileDialog.getOpenFileName(
             None,
             'Load openScope Airport',
-            SettingsDialog.getAirportPath(),
+            SettingsDialog.getLastAirportPath(),
             'Airport Files(*.json)',
         )
 
@@ -393,6 +393,8 @@ Are you sure you want to continue?"""
             QMessageBox.warning(None, 'QgsOpenScope', 'Airport File \'%s\' does not exist.' % fileName)
             return None
 
+        SettingsDialog.setLastAirportPath(fileName)
+        
         return AirportModel(fileName)
 
     def loadAirport(self):

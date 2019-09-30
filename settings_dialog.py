@@ -134,6 +134,14 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
         return SettingsDialog._readSetting('gshhsPath')
 
     @staticmethod
+    def getLastAirportPath():
+        """Gets the path of last airport used"""
+        return SettingsDialog._readSetting(
+            'lastAirport',
+            SettingsDialog.getAirportPath()
+        )
+
+    @staticmethod
     def getTempPath():
         """Gets the temp path"""
         return SettingsDialog._readSetting('tempPath', tempfile.tempdir)
@@ -147,6 +155,11 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
     def setGSHHSPath(path):
         """Sets the GSHHS path"""
         SettingsDialog._saveSetting('gshhsPath', path)
+
+    @staticmethod
+    def setLastAirportPath(path):
+        """Sets the path of last airport used"""
+        SettingsDialog._saveSetting('lastAirport', path)
 
     @staticmethod
     def setTempPath(path):
