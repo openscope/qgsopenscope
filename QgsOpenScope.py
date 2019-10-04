@@ -346,18 +346,19 @@ class QgsOpenScope:
     def generateTerrain(self):
         """Generates the terrain"""
 
-        message = """This will remove all existing layers from the Terrain group.
-Are you sure you want to continue?"""
+        if TerrainGenerator.hasExistingLayers():
+            message = """This will remove all existing layers from the Terrain group.
+    Are you sure you want to continue?"""
 
-        response = QMessageBox.question(
-            None,
-            'QgsOpenScope',
-            message,
-            QMessageBox.Yes, QMessageBox.No
-        )
+            response = QMessageBox.question(
+                None,
+                'QgsOpenScope',
+                message,
+                QMessageBox.Yes, QMessageBox.No
+            )
 
-        if response == QMessageBox.No:
-            return
+            if response == QMessageBox.No:
+                return
 
         airport = self.getAirport()
 
@@ -394,24 +395,25 @@ Are you sure you want to continue?"""
             return None
 
         SettingsDialog.setLastAirportPath(fileName)
-        
+
         return AirportModel(fileName)
 
     def loadAirport(self):
         """Loads an airport into the workspace"""
 
-        message = """This will remove all existing layers from the project.
-Are you sure you want to continue?"""
+        if ProjectGenerator.hasExistingLayers():
+            message = """This will remove all existing layers from the project.
+    Are you sure you want to continue?"""
 
-        response = QMessageBox.question(
-            None,
-            'QgsOpenScope',
-            message,
-            QMessageBox.Yes, QMessageBox.No
-        )
+            response = QMessageBox.question(
+                None,
+                'QgsOpenScope',
+                message,
+                QMessageBox.Yes, QMessageBox.No
+            )
 
-        if response == QMessageBox.No:
-            return
+            if response == QMessageBox.No:
+                return
 
         airport = self.getAirport()
 
