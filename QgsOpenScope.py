@@ -62,17 +62,17 @@ class QgsOpenScope:
         # Save reference to the QGIS interface
         self.iface = iface
         # initialize plugin directory
-        self.plugin_dir = os.path.dirname(__file__)
+        self.pluginDir = os.path.dirname(__file__)
         # initialize locale
         locale = QSettings().value('locale/userLocale')[0:2]
-        locale_path = os.path.join(
-            self.plugin_dir,
+        localePath = os.path.join(
+            self.pluginDir,
             'i18n',
             'QgsOpenScope_{}.qm'.format(locale))
 
-        if os.path.exists(locale_path):
+        if os.path.exists(localePath):
             self.translator = QTranslator()
-            self.translator.load(locale_path)
+            self.translator.load(localePath)
             QCoreApplication.installTranslator(self.translator)
 
         # Declare instance attributes
@@ -81,7 +81,7 @@ class QgsOpenScope:
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
-        self.first_start = None
+        self.firstStart = None
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -100,23 +100,23 @@ class QgsOpenScope:
 
 
     # pylint: disable=too-many-arguments
-    def add_action(
+    def addAction(
             self,
-            icon_path,
+            iconPath,
             text,
             callback,
-            enabled_flag=True,
-            add_to_menu=True,
-            add_to_toolbar=True,
-            status_tip=None,
-            whats_this=None,
+            isEnabled=True,
+            isMenuItem=True,
+            isToolbarItem=True,
+            statusTip=None,
+            whatsThis=None,
             parent=None
         ):
         """Add a toolbar icon to the toolbar.
 
-        :param icon_path: Path to the icon for this action. Can be a resource
+        :param iconPath: Path to the icon for this action. Can be a resource
             path (e.g. ':/plugins/foo/bar.png') or a normal file system path.
-        :type icon_path: str
+        :type iconPath: str
 
         :param text: Text that should be shown in menu items for this action.
         :type text: str
@@ -124,26 +124,26 @@ class QgsOpenScope:
         :param callback: Function to be called when the action is triggered.
         :type callback: function
 
-        :param enabled_flag: A flag indicating if the action should be enabled
+        :param isEnabled: A flag indicating if the action should be enabled
             by default. Defaults to True.
-        :type enabled_flag: bool
+        :type isEnabled: bool
 
-        :param add_to_menu: Flag indicating whether the action should also
+        :param isMenuItem: Flag indicating whether the action should also
             be added to the menu. Defaults to True.
-        :type add_to_menu: bool
+        :type isMenuItem: bool
 
-        :param add_to_toolbar: Flag indicating whether the action should also
+        :param isToolbarItem: Flag indicating whether the action should also
             be added to the toolbar. Defaults to True.
-        :type add_to_toolbar: bool
+        :type isToolbarItem: bool
 
-        :param status_tip: Optional text to show in a popup when mouse pointer
+        :param statusTip: Optional text to show in a popup when mouse pointer
             hovers over the action.
-        :type status_tip: str
+        :type statusTip: str
 
         :param parent: Parent widget for the new action. Defaults None.
         :type parent: QWidget
 
-        :param whats_this: Optional text to show in the status bar when the
+        :param whatsThis: Optional text to show in the status bar when the
             mouse pointer hovers over the action.
 
         :returns: The action that was created. Note that the action is also
@@ -151,22 +151,22 @@ class QgsOpenScope:
         :rtype: QAction
         """
 
-        icon = QIcon(icon_path)
+        icon = QIcon(iconPath)
         action = QAction(icon, text, parent)
         action.triggered.connect(callback)
-        action.setEnabled(enabled_flag)
+        action.setEnabled(isEnabled)
 
-        if status_tip is not None:
-            action.setStatusTip(status_tip)
+        if statusTip is not None:
+            action.setStatusTip(statusTip)
 
-        if whats_this is not None:
-            action.setWhatsThis(whats_this)
+        if whatsThis is not None:
+            action.setWhatsThis(whatsThis)
 
-        if add_to_toolbar:
+        if isToolbarItem:
             # Adds plugin icon to Plugins toolbar
             self.iface.addToolBarIcon(action)
 
-        if add_to_menu:
+        if isMenuItem:
             self.iface.addPluginToMenu(
                 self.menu,
                 action)
@@ -186,74 +186,74 @@ class QgsOpenScope:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        #icon_path = ':/plugins/QgsOpenScope/icon.png'
+        #iconPath = ':/plugins/QgsOpenScope/icon.png'
 
         # Load
-        self.add_action(
+        self.addAction(
             None,
             text=self.tr(u'Load Airport'),
             callback=self.loadAirport,
             parent=self.iface.mainWindow(),
-            add_to_toolbar=False
+            isToolbarItem=False
         )
-        self.add_action(
+        self.addAction(
             None,
             text='Generate Terrain',
             callback=self.generateTerrain,
             parent=self.iface.mainWindow(),
-            add_to_toolbar=False
+            isToolbarItem=False
         )
 
         # Export
         self.addMenuSeparator()
-        self.add_action(
+        self.addAction(
             None,
             text='Export Airspace',
             callback=self.exportAirspace,
             parent=self.iface.mainWindow(),
-            add_to_toolbar=False
+            isToolbarItem=False
         )
-        self.add_action(
+        self.addAction(
             None,
             text='Export Fixes',
             callback=self.exportFixes,
             parent=self.iface.mainWindow(),
-            add_to_toolbar=False
+            isToolbarItem=False
         )
-        self.add_action(
+        self.addAction(
             None,
             text='Export Maps',
             callback=self.exportMaps,
             parent=self.iface.mainWindow(),
-            add_to_toolbar=False
+            isToolbarItem=False
         )
-        self.add_action(
+        self.addAction(
             None,
             text='Export Restricted',
             callback=self.exportRestricted,
             parent=self.iface.mainWindow(),
-            add_to_toolbar=False
+            isToolbarItem=False
         )
-        self.add_action(
+        self.addAction(
             None,
             text='Export Terrain',
             callback=self.exportTerrain,
             parent=self.iface.mainWindow(),
-            add_to_toolbar=False
+            isToolbarItem=False
         )
 
         # Settings
         self.addMenuSeparator()
-        self.add_action(
+        self.addAction(
             None,
             text='QgsOpenScope Settings',
             callback=self.showSettingsDialog,
             parent=self.iface.mainWindow(),
-            add_to_toolbar=False
+            isToolbarItem=False
         )
 
         # will be set False in run()
-        self.first_start = True
+        self.firstStart = True
 
 
     def unload(self):
