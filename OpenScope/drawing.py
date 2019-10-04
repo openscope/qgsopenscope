@@ -123,11 +123,6 @@ def _drawCircle(radius, centre, layer, da):
 def _drawRunwayExtension(length, dashLength, crossInterval, crossWidth, points, layer, da):
     """Draw the runway extension lines """
 
-    # length *= _METRES_PER_NM
-    # dashLength *= _METRES_PER_NM
-    # crossInterval *= _METRES_PER_NM
-    # crossWidth *= _METRES_PER_NM
-
     bearing = da.bearing(points[0], points[1])
 
     features = []
