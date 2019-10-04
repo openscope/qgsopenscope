@@ -39,6 +39,11 @@ class ProjectGenerator(GeneratorBase):
 
         self.zoomToAllLayers()
 
+    @staticmethod
+    def hasExistingLayers():
+        """Gets a flag indicating whether the project has existing layers or groups"""
+        return QgsProject.instance().layerTreeRoot().children() != []
+
 #------------------- Private -------------------
 
     def _generateAirspace(self, group, hiddenAirspace=False):

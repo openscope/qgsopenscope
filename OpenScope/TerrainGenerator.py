@@ -31,7 +31,7 @@ class TerrainGenerator(GeneratorBase):
     def generateTerrain(self, feedback=None):
         """Generates the terrain"""
 
-        terrain = QgsProject.instance().layerTreeRoot().findGroup('Terrain')
+        terrain = TerrainGenerator._getTerrainGroup()
 
         if terrain:
             for layer in terrain.findLayers():
@@ -47,6 +47,12 @@ class TerrainGenerator(GeneratorBase):
         self._generateTerrain(terrain, polygons, feedback)
 
         return (True, None)
+
+    @staticmethod
+    def hasExistingLayers():
+        """Gets a flag indicating whether there are existing terrain layers"""
+        group = TerrainGenerator._getTerrainGroup()
+        return group is not None and group.findLayers() != []
 
 #------------------- Private -------------------
 
@@ -251,6 +257,11 @@ class TerrainGenerator(GeneratorBase):
             selected.extend(features)
 
         return selected
+
+    @staticmethod
+    def _getTerrainGroup():
+        """Gets the terrain group"""
+        return QgsProject.instance().layerTreeRoot().findGroup('Terrain')
 
     def _getWater(self, airspace, buffer):
         """Get the water layer."""
