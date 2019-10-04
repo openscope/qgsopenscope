@@ -27,7 +27,7 @@ import os.path
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QApplication, QFileDialog, QMessageBox
+from qgis.PyQt.QtWidgets import QAction, QApplication, QFileDialog, QInputDialog, QMessageBox
 
 from qgis.core import QgsProject, QgsVectorFileWriter
 
@@ -41,10 +41,11 @@ from .settings_dialog import SettingsDialog
 
 from .OpenScope.AirportModel import AirportModel
 from .OpenScope.AirspaceModel import AirspaceModel
+from .OpenScope.drawing import drawCircles, drawRunwayExtension
 from .OpenScope.FixModel import FixModel
+from .OpenScope.functions import EXPORT_PRECISION
 from .OpenScope.MapModel import MapModel
 from .OpenScope.RestrictedModel import RestrictedModel
-from .OpenScope.functions import EXPORT_PRECISION
 from .OpenScope.ProjectGenerator import ProjectGenerator, ProjectGeneratorConfig
 from .OpenScope.TerrainGenerator import TerrainGenerator, TerrainGeneratorConfig
 
@@ -242,6 +243,23 @@ class QgsOpenScope:
             isToolbarItem=False
         )
 
+        # Drawing
+        self.addMenuSeparator()
+        self.addAction(
+            None,
+            text='Draw Circle around points',
+            callback=self.drawCircles,
+            parent=self.iface.mainWindow(),
+            isToolbarItem=False
+        )
+        self.addAction(
+            None,
+            text='Draw Extended Runway Centrelines',
+            callback=self.drawRunwayExtensions,
+            parent=self.iface.mainWindow(),
+            isToolbarItem=False
+        )
+
         # Settings
         self.addMenuSeparator()
         self.addAction(
@@ -270,6 +288,46 @@ class QgsOpenScope:
         cb = QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
         cb.setText(text, mode=cb.Clipboard)
+
+    def drawCircles(self):
+        """Draws a circle around the selected points"""
+
+        radius, okPress = QInputDialog.getInt(
+            None,
+            'Circle Radius',
+            'The circle radius in NM:',
+            5,
+            1,
+            step=5
+        )
+
+        if not okPress:
+            return
+
+        success, message = drawCircles(radius)
+
+        if not success:
+            QMessageBox.warning(None, 'QgsOpenScope', message)
+
+    def drawRunwayExtensions(self):
+        """Draw the extended runway centrelines"""
+
+        length, okPress = QInputDialog.getInt(
+            None,
+            'Extended Runway Centrelines',
+            'The total length in NM:',
+            8,
+            1,
+            step=4
+        )
+
+        if not okPress:
+            return
+
+        success, message = drawRunwayExtension(length)
+
+        if not success:
+            QMessageBox.warning(None, 'QgsOpenScope', message)
 
     def exportAirspace(self):
         """Exports the Airspace features as JSON."""
