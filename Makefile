@@ -50,9 +50,9 @@ PY_FILES = \
 
 UI_FILES = settings_dialog_base.ui
 
-EXTRAS = metadata.txt icon.png
+EXTRAS = metadata.txt
 
-EXTRA_DIRS = OpenScope
+EXTRA_DIRS = OpenScope icons
 
 COMPILED_RESOURCE_FILES = resources.py
 

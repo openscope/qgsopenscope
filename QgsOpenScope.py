@@ -191,18 +191,18 @@ class QgsOpenScope:
 
         # Load
         self.addAction(
-            None,
+            ':/plugins/QgsOpenScope/icons/airport-import.png',
             text=self.tr(u'Load Airport'),
             callback=self.loadAirport,
             parent=self.iface.mainWindow(),
-            isToolbarItem=False
+            isToolbarItem=True
         )
         self.addAction(
-            None,
+            ':/plugins/QgsOpenScope/icons/terrain-import.png',
             text='Generate Terrain',
             callback=self.generateTerrain,
             parent=self.iface.mainWindow(),
-            isToolbarItem=False
+            isToolbarItem=True
         )
 
         # Export
@@ -236,7 +236,7 @@ class QgsOpenScope:
             isToolbarItem=False
         )
         self.addAction(
-            None,
+            ':/plugins/QgsOpenScope/icons/terrain-export.png',
             text='Export Terrain',
             callback=self.exportTerrain,
             parent=self.iface.mainWindow(),
@@ -246,18 +246,18 @@ class QgsOpenScope:
         # Drawing
         self.addMenuSeparator()
         self.addAction(
-            None,
+            ':/plugins/QgsOpenScope/icons/draw-circle.png',
             text='Draw Circle around points',
             callback=self.drawCircles,
             parent=self.iface.mainWindow(),
-            isToolbarItem=False
+            isToolbarItem=True
         )
         self.addAction(
-            None,
+            ':/plugins/QgsOpenScope/icons/draw-runways.png',
             text='Draw Extended Runway Centrelines',
             callback=self.drawRunwayExtensions,
             parent=self.iface.mainWindow(),
-            isToolbarItem=False
+            isToolbarItem=True
         )
 
         # Settings

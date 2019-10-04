@@ -29,7 +29,7 @@ tags=python, qgis, openScope
 
 homepage=https://github.com/openscope/qgsopenscope
 category=Plugins
-icon=icon.png
+icon=icons/openscope.png
 # experimental flag
 experimental=True
 
