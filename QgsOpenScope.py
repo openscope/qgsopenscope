@@ -175,10 +175,20 @@ class QgsOpenScope:
 
         return action
 
+    def addMenuSeparator(self):
+        """Adds a separator to the specified menu bar"""
+        separator = QAction()
+        separator.setSeparator(True)
+
+        self.iface.addPluginToMenu(self.menu, separator)
+        self.actions.append(separator)
+
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         #icon_path = ':/plugins/QgsOpenScope/icon.png'
+
+        # Load
         self.add_action(
             None,
             text=self.tr(u'Load Airport'),
@@ -193,6 +203,9 @@ class QgsOpenScope:
             parent=self.iface.mainWindow(),
             add_to_toolbar=False
         )
+
+        # Export
+        self.addMenuSeparator()
         self.add_action(
             None,
             text='Export Airspace',
@@ -228,6 +241,9 @@ class QgsOpenScope:
             parent=self.iface.mainWindow(),
             add_to_toolbar=False
         )
+
+        # Settings
+        self.addMenuSeparator()
         self.add_action(
             None,
             text='QgsOpenScope Settings',
