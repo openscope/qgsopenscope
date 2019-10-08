@@ -8,6 +8,7 @@ from qgis.core import (
     QgsPalLayerSettings, QgsProject,
     QgsVectorLayerSimpleLabeling
 )
+from qgis.utils import iface
 from .GeneratorBase import GeneratorBase, GeneratorConfigBase
 
 _MEMORY_OUTPUT = 'memory:'
@@ -32,10 +33,11 @@ class ProjectGenerator(GeneratorBase):
         maps = self.addGroup('Maps')
         self.addGroup('Terrain')
 
-        self._generateAirspace(root)
+        airspace = self._generateAirspace(root)
         self._generateAirspace(root, True)
         self._generateMaps(maps)
-        # self._generateTerrain(terrain, airspaceLayer, feedback)
+
+        iface.setActiveLayer(airspace)
 
         self.zoomToAllLayers()
 
