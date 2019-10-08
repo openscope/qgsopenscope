@@ -119,7 +119,8 @@ class GeneratorBase:
         layer.setReadOnly(True)
 
         # Styling
-        layer.renderer().symbol().setColor(QColor.fromRgb(0xff, 0x9e, 0x17))
+        if layer.renderer():
+            layer.renderer().symbol().setColor(QColor.fromRgb(0xff, 0x9e, 0x17))
 
         # Load the layer, but don't display by default
         self.addLayerToGroup(layer, group)
