@@ -1,6 +1,7 @@
 """The base class from which GIS generators should inherit"""
 import os
 import tempfile
+from PyQt5.QtGui import QColor
 from qgis.core import (
     QgsProject,
     QgsRectangle,
@@ -13,6 +14,8 @@ class GeneratorConfigBase:
     """The configuration options passed to the GeneratorBase constructor."""
 
     airportFile = None
+
+    terrainFile = None
 
     tmpPath = tempfile.gettempdir()
 
@@ -93,6 +96,34 @@ class GeneratorBase:
         )
 
         return QgsVectorLayer(fileName, name)
+
+    def loadExistingTerrain(self, group):
+        """Loads the existing terrrain, if present"""
+
+        terrainFile = self._config.terrainFile
+
+        # Make a guess of where the terrain file is located
+        if not terrainFile or not os.path.isfile(terrainFile):
+            terrainFile = os.path.join(
+                os.path.dirname(self._config.airportFile),
+                'terrain',
+                '%s.geojson' % str.lower(self.getIcao())
+            )
+
+        print(terrainFile)
+        if not os.path.isfile(terrainFile):
+            return
+
+        layer = QgsVectorLayer(terrainFile)
+        layer.setName('Existing Terrain')
+        layer.setReadOnly(True)
+
+        # Styling
+        layer.renderer().symbol().setColor(QColor.fromRgb(0xff, 0x9e, 0x17))
+
+        # Load the layer, but don't display by default
+        self.addLayerToGroup(layer, group)
+        QgsProject.instance().layerTreeRoot().findLayer(layer.id()).setItemVisibilityChecked(False)
 
     def zoomToAllLayers(self):
         """Zoom to the buffered area and redraw"""

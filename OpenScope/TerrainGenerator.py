@@ -44,6 +44,7 @@ class TerrainGenerator(GeneratorBase):
         if not polygons:
             return (False, 'No valid polygons were selected to determine the terrain bounds')
 
+        self.loadExistingTerrain(terrain)
         self._generateTerrain(terrain, polygons, feedback)
 
         return (True, None)

@@ -31,11 +31,12 @@ class ProjectGenerator(GeneratorBase):
         self._generateRestricted(root)
 
         maps = self.addGroup('Maps')
-        self.addGroup('Terrain')
+        terrain = self.addGroup('Terrain')
 
         airspace = self._generateAirspace(root)
         self._generateAirspace(root, True)
         self._generateMaps(maps)
+        self.loadExistingTerrain(terrain)
 
         iface.setActiveLayer(airspace)
 
