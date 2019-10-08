@@ -7,7 +7,7 @@ name=QgsOpenScope
 qgisMinimumVersion=3.4
 description=A collection of tools for the openScope project
 
-version=0.0.3
+version=0.0.4
 author=openScope
 email=3430117+oobayly@users.noreply.github.com
 
@@ -22,7 +22,13 @@ repository=https://github.com/openscope/qgsopenscope
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-# changelog=
+changelog=
+    0.0.3   - Load existing terrain file as read-only, if found
+              Update icons
+              Improve error handling
+    0.0.2   - Separate out terrain generation
+    0.0.1   - Initial release
+
 
 # Tags are comma separated with spaces allowed
 tags=python, qgis, openScope
