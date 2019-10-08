@@ -7,9 +7,12 @@ from qgis.core import (
     QgsVectorLayer, QgsVectorFileWriter
 )
 from qgis.utils import iface
+from .AirportModel import AirportModel
 
 class GeneratorConfigBase:
     """The configuration options passed to the GeneratorBase constructor."""
+
+    airportFile = None
 
     tmpPath = tempfile.gettempdir()
 
@@ -22,8 +25,8 @@ class GeneratorBase:
 
 #------------------- Lifecycle -------------------
 
-    def __init__(self, airport, config):
-        self._airport = airport
+    def __init__(self, config):
+        self._airport = AirportModel(config.airportFile)
         self._config = config
 
 #------------------- Public -------------------

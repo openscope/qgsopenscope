@@ -39,7 +39,6 @@ from .resources import * # pylint: disable=wildcard-import,unused-wildcard-impor
 # Import the code for the dialog
 from .settings_dialog import SettingsDialog
 
-from .OpenScope.AirportModel import AirportModel
 from .OpenScope.AirspaceModel import AirspaceModel
 from .OpenScope.drawing import drawCircles, drawRunwayExtension
 from .OpenScope.FixModel import FixModel
@@ -434,25 +433,26 @@ class QgsOpenScope:
             if response == QMessageBox.No:
                 return
 
-        airport = self.getAirport()
+        airportFile = self.getAirportFile()
 
-        if not airport:
+        if not airportFile:
             return
 
         config = TerrainGeneratorConfig()
 
+        config.airportFile = airportFile
         config.gshhsPath = SettingsDialog.getGSHHSPath()
         config.tmpPath = SettingsDialog.getTempPath()
         config.contourInterval = 304.8
 
-        terrain = TerrainGenerator(airport, config)
+        terrain = TerrainGenerator(config)
 
         success, message = terrain.generateTerrain()
 
         if not success:
             QMessageBox.warning(None, 'QgsOpenScope', message)
 
-    def getAirport(self):
+    def getAirportFile(self):
         """Prompts the user to select an airport file and returns the AirportModel"""
 
         fileName, _ = QFileDialog.getOpenFileName(
@@ -470,7 +470,7 @@ class QgsOpenScope:
 
         SettingsDialog.setLastAirportPath(fileName)
 
-        return AirportModel(fileName)
+        return fileName
 
     def loadAirport(self):
         """Loads an airport into the workspace"""
@@ -489,9 +489,9 @@ class QgsOpenScope:
             if response == QMessageBox.No:
                 return
 
-        airport = self.getAirport()
+        airportFile = self.getAirportFile()
 
-        if not airport:
+        if not airportFile:
             return
 
         project = QgsProject.instance()
@@ -500,9 +500,10 @@ class QgsOpenScope:
 
         config = ProjectGeneratorConfig()
 
+        config.airportFile = airportFile
         config.tmpPath = SettingsDialog.getTempPath()
 
-        proj = ProjectGenerator(airport, config)
+        proj = ProjectGenerator(config)
         proj.populateProject()
 
     def showSettingsDialog(self):
