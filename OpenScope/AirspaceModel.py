@@ -1,6 +1,6 @@
 """An openScope airspace object."""
 import json
-from .functions import fromPolygon, toPolygon
+from .utilities.functions import fromPolygon, toPolygon
 
 class AirspaceModel:
     """An openScope airspace object."""

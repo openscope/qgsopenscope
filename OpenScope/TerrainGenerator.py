@@ -12,7 +12,7 @@ from qgis.core import (
 )
 import processing # pylint: disable=import-error
 from .GeneratorBase import GeneratorBase, GeneratorConfigBase
-from .dem import getDemFromLayer
+from .utilities.dem import getDemFromLayer
 
 _MEMORY_OUTPUT = 'memory:'
 

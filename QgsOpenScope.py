@@ -42,13 +42,13 @@ from .resources import * # pylint: disable=wildcard-import,unused-wildcard-impor
 from .settings_dialog import SettingsDialog
 
 from .OpenScope.AirspaceModel import AirspaceModel
-from .OpenScope.drawing import drawCircles, drawRunwayExtension
 from .OpenScope.FixModel import FixModel
-from .OpenScope.functions import EXPORT_PRECISION
 from .OpenScope.MapModel import MapModel
 from .OpenScope.RestrictedModel import RestrictedModel
 from .OpenScope.ProjectGenerator import ProjectGenerator, ProjectGeneratorConfig
 from .OpenScope.TerrainGenerator import TerrainGenerator, TerrainGeneratorConfig
+from .OpenScope.utilities.drawing import drawCircles, drawRunwayExtension
+from .OpenScope.utilities.functions import EXPORT_PRECISION
 
 class QgsOpenScope:
     """QGIS Plugin Implementation."""

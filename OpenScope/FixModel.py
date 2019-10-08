@@ -1,6 +1,6 @@
 """An opeScope Fix object"""
 import json
-from .functions import fromPointXY, toPointXY
+from .utilities.functions import fromPointXY, toPointXY
 
 class FixModel:
     """An opeScope Fix object"""
