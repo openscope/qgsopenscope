@@ -31,8 +31,6 @@ from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QInputDialog, QMessageBox
 
-from qgis.core import QgsProject
-
 # Initialize Qt resources from file resources.py
 from .resources import * # pylint: disable=wildcard-import,unused-wildcard-import
 
@@ -267,7 +265,6 @@ class QgsOpenScope:
         # will be set False in run()
         self.firstStart = True
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -275,6 +272,8 @@ class QgsOpenScope:
                 self.tr(u'&QgsOpenScope'),
                 action)
             self.iface.removeToolBarIcon(action)
+
+#------------------- Handlers -------------------
 
     def drawCircles(self):
         """Draws a circle around the selected points"""
@@ -340,8 +339,10 @@ class QgsOpenScope:
         """Generates the terrain"""
 
         if TerrainGenerator.hasExistingLayers():
-            message = """This will remove all existing layers from the Terrain group.
-    Are you sure you want to continue?"""
+            message = (
+                "This will remove all existing layers from the Terrain group. "
+                "Are you sure you want to continue?"
+            )
 
             response = QMessageBox.question(
                 None,
@@ -353,7 +354,7 @@ class QgsOpenScope:
             if response == QMessageBox.No:
                 return
 
-        airportFile = self.getAirportFile()
+        airportFile = self._getAirportFile()
 
         if not airportFile:
             return
@@ -371,32 +372,14 @@ class QgsOpenScope:
         except Exception as e:
             QMessageBox.warning(None, 'QgsOpenScope', str(e))
 
-    def getAirportFile(self):
-        """Prompts the user to select an airport file and returns the AirportModel"""
-
-        fileName, _ = QFileDialog.getOpenFileName(
-            None,
-            'Load openScope Airport',
-            SettingsDialog.getLastAirportPath(),
-            'Airport Files(*.json)',
-        )
-
-        if not fileName:
-            return None
-        if not os.path.isfile(fileName):
-            QMessageBox.warning(None, 'QgsOpenScope', 'Airport File \'%s\' does not exist.' % fileName)
-            return None
-
-        SettingsDialog.setLastAirportPath(fileName)
-
-        return fileName
-
     def loadAirport(self):
         """Loads an airport into the workspace"""
 
         if ProjectGenerator.hasExistingLayers():
-            message = """This will remove all existing layers from the project.
-    Are you sure you want to continue?"""
+            message = (
+                "This will remove all existing layers from the project. "
+                "Are you sure you want to continue?"
+            )
 
             response = QMessageBox.question(
                 None,
@@ -408,14 +391,10 @@ class QgsOpenScope:
             if response == QMessageBox.No:
                 return
 
-        airportFile = self.getAirportFile()
+        airportFile = self._getAirportFile()
 
         if not airportFile:
             return
-
-        project = QgsProject.instance()
-
-        project.clear()
 
         config = ProjectGeneratorConfig()
 
@@ -439,3 +418,25 @@ class QgsOpenScope:
 
         if result:
             pass
+
+#------------------- Private methods -------------------
+
+    def _getAirportFile(self):
+        """Prompts the user to select an airport file and returns the AirportModel"""
+
+        fileName, _ = QFileDialog.getOpenFileName(
+            None,
+            'Load openScope Airport',
+            SettingsDialog.getLastAirportPath(),
+            'Airport Files(*.json)',
+        )
+
+        if not fileName:
+            return None
+        if not os.path.isfile(fileName):
+            QMessageBox.warning(None, 'QgsOpenScope', 'Airport File \'%s\' does not exist.' % fileName)
+            return None
+
+        SettingsDialog.setLastAirportPath(fileName)
+
+        return fileName
