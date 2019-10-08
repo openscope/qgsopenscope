@@ -40,7 +40,7 @@ class AirportModel:
 
         return [
             FixModel(key, value)
-            for key, value in self._airport['fixes'].items()
+            for key, value in self._airport.get('fixes', {}).items()
         ]
 
     def getMaps(self):
@@ -48,7 +48,7 @@ class AirportModel:
 
         maps = []
 
-        mapsJson = self._airport['maps']
+        mapsJson = self._airport.get('maps', [])
         if isinstance(mapsJson, dict):
             for key, value in mapsJson.items():
                 maps.append(MapModel(key, value))
@@ -64,5 +64,5 @@ class AirportModel:
 
         return [
             RestrictedModel(item)
-            for item in self._airport.get('restricted') or []
+            for item in self._airport.get('restricted', [])
         ]
