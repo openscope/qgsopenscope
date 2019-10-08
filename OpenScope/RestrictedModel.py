@@ -1,6 +1,6 @@
 """An openScope Restricted Airspace object."""
 import json
-from .utilities.functions import fromPolygon, toPolygon
+from .utilities.converters import fromPolygon, toPolygon
 
 class RestrictedModel:
     """An openScope Restricted Airspace object."""

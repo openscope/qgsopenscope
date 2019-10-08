@@ -1,6 +1,6 @@
 """An openScope Map object."""
 import json
-from .utilities.functions import fromPolylines, toPolyline
+from .utilities.converters import fromPolylines, toPolyline
 
 class MapModel:
     """An openScope Map object."""
