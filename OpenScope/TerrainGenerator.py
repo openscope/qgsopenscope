@@ -42,12 +42,10 @@ class TerrainGenerator(GeneratorBase):
         polygons = self._getSelectedPolygons()
 
         if not polygons:
-            return (False, 'No valid polygons were selected to determine the terrain bounds')
+            raise Exception('No valid polygons were selected to determine the terrain bounds')
 
         self.loadExistingTerrain(terrain)
         self._generateTerrain(terrain, polygons, feedback)
-
-        return (True, None)
 
     @staticmethod
     def hasExistingLayers():

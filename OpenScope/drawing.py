@@ -22,15 +22,13 @@ _MIN_SEGMENT_LENGTH = 1
 def drawCircles(radius, points=None, layer=None):
     """Draws a circle of `radius` NM around the specified QgsPointXY(s)"""
 
-    canvas, layer, message = _validateCanvasAndLayer(layer)
-    if not canvas:
-        return (False, message)
+    canvas, layer = _validateCanvasAndLayer(layer)
 
     if not points:
         points = _getSelectedPoints()
 
     if not points:
-        return (False, 'No points are selected')
+        raise Exception('No points are selected')
 
     da = _getDistanceArea()
 
@@ -39,20 +37,16 @@ def drawCircles(radius, points=None, layer=None):
 
     canvas.refreshAllLayers()
 
-    return (True, None)
-
 def drawRunwayExtension(length, dashLength=1, crossInterval=4, crossWidth=1, features=None, layer=None):
     """Draw the runway extension lines """
 
-    canvas, layer, message = _validateCanvasAndLayer(layer)
-    if not canvas:
-        return (False, message)
+    canvas, layer = _validateCanvasAndLayer(layer)
 
     if not features:
         features = _getSelectedFeatures()
 
     if not features:
-        return (False, 'No features selected')
+        raise Exception('No features selected')
 
     points = filter(
         lambda x: x.geometry().type() == QgsWkbTypes.PointGeometry,
@@ -70,28 +64,26 @@ def drawRunwayExtension(length, dashLength=1, crossInterval=4, crossWidth=1, fea
     ))
 
     if points and lines:
-        return (False, 'Ambigious selection. Please select a line OR two points')
+        raise Exception('Ambigious selection. Please select a line OR two points')
 
     if points:
         if len(points) != 2:
-            return (False, 'Exactly two points must be selected')
+            raise Exception('Exactly two points must be selected')
 
     else:
         if len(lines) != 1:
-            return (False, 'Exactly one line segment must be selected')
+            raise Exception('Exactly one line segment must be selected')
 
         points = lines[0].geometry().asPolyline()
 
         if len(points) != 2:
-            return (False, 'A line segment with exactly two points must be selected')
+            raise Exception('A line segment with exactly two points must be selected')
 
     da = _getDistanceArea()
 
     _drawRunwayExtension(length, dashLength, crossInterval, crossWidth, points, layer, da)
 
     canvas.refreshAllLayers()
-
-    return (True, None)
 
 #------------------- Private -------------------
 
@@ -217,16 +209,12 @@ def _validateCanvasAndLayer(layer, requiredType=QgsWkbTypes.LineString):
     canvas = iface.mapCanvas()
 
     if canvas.mapSettings().destinationCrs().srsid() != _EPSG_4326_SRS_ID:
-        return (None, None, 'Cannot continue. Canvas needs to be using WGS84 (EPSG 4326)')
+        raise ValueError('Cannot continue. Canvas needs to be using WGS84 (EPSG 4326)')
 
     if not layer:
         layer = iface.activeLayer()
 
     if not layer or layer.wkbType() != requiredType:
-        return (
-            None,
-            None,
-            'Cannot draw lines on %s layer' % QgsWkbTypes.displayString(layer.wkbType())
-        )
+        raise ValueError('Cannot draw lines on %s layer' % QgsWkbTypes.displayString(layer.wkbType()))
 
-    return (canvas, layer, None)
+    return (canvas, layer)

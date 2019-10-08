@@ -23,6 +23,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+#pylint: disable=broad-except
+
 import os.path
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
@@ -303,10 +305,10 @@ class QgsOpenScope:
         if not okPress:
             return
 
-        success, message = drawCircles(radius)
-
-        if not success:
-            QMessageBox.warning(None, 'QgsOpenScope', message)
+        try:
+            drawCircles(radius)
+        except Exception as e:
+            QMessageBox.warning(None, 'QgsOpenScope', str(e))
 
     def drawRunwayExtensions(self):
         """Draw the extended runway centrelines"""
@@ -323,10 +325,10 @@ class QgsOpenScope:
         if not okPress:
             return
 
-        success, message = drawRunwayExtension(length)
-
-        if not success:
-            QMessageBox.warning(None, 'QgsOpenScope', message)
+        try:
+            drawRunwayExtension(length)
+        except Exception as e:
+            QMessageBox.warning(None, 'QgsOpenScope', str(e))
 
     def exportAirspace(self):
         """Exports the Airspace features as JSON."""
@@ -445,12 +447,11 @@ class QgsOpenScope:
         config.tmpPath = SettingsDialog.getTempPath()
         config.contourInterval = 304.8
 
-        terrain = TerrainGenerator(config)
-
-        success, message = terrain.generateTerrain()
-
-        if not success:
-            QMessageBox.warning(None, 'QgsOpenScope', message)
+        try:
+            terrain = TerrainGenerator(config)
+            terrain.generateTerrain()
+        except Exception as e:
+            QMessageBox.warning(None, 'QgsOpenScope', str(e))
 
     def getAirportFile(self):
         """Prompts the user to select an airport file and returns the AirportModel"""
@@ -503,8 +504,11 @@ class QgsOpenScope:
         config.airportFile = airportFile
         config.tmpPath = SettingsDialog.getTempPath()
 
-        proj = ProjectGenerator(config)
-        proj.populateProject()
+        try:
+            proj = ProjectGenerator(config)
+            proj.populateProject()
+        except Exception as e:
+            QMessageBox.warning(None, 'QgsOpenScope', str(e))
 
     def showSettingsDialog(self):
         """Show the settings dialog"""
