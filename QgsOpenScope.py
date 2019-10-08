@@ -29,11 +29,9 @@ import os.path
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QApplication, QFileDialog, QInputDialog, QMessageBox
+from qgis.PyQt.QtWidgets import QAction, QFileDialog, QInputDialog, QMessageBox
 
-from qgis.core import QgsProject, QgsVectorFileWriter
-
-import processing # pylint: disable=import-error
+from qgis.core import QgsProject
 
 # Initialize Qt resources from file resources.py
 from .resources import * # pylint: disable=wildcard-import,unused-wildcard-import
@@ -41,14 +39,9 @@ from .resources import * # pylint: disable=wildcard-import,unused-wildcard-impor
 # Import the code for the dialog
 from .settings_dialog import SettingsDialog
 
-from .OpenScope.AirspaceModel import AirspaceModel
-from .OpenScope.FixModel import FixModel
-from .OpenScope.MapModel import MapModel
-from .OpenScope.RestrictedModel import RestrictedModel
 from .OpenScope.ProjectGenerator import ProjectGenerator, ProjectGeneratorConfig
 from .OpenScope.TerrainGenerator import TerrainGenerator, TerrainGeneratorConfig
-from .OpenScope.utilities.drawing import drawCircles, drawRunwayExtension
-from .OpenScope.utilities.converters import EXPORT_PRECISION
+from .OpenScope.utilities import drawing, exporter
 
 class QgsOpenScope:
     """QGIS Plugin Implementation."""
@@ -283,13 +276,6 @@ class QgsOpenScope:
                 action)
             self.iface.removeToolBarIcon(action)
 
-
-    def copyToClipboard(self, text):
-        """Copies the specified text to the clipboard."""
-        cb = QApplication.clipboard()
-        cb.clear(mode=cb.Clipboard)
-        cb.setText(text, mode=cb.Clipboard)
-
     def drawCircles(self):
         """Draws a circle around the selected points"""
 
@@ -306,7 +292,7 @@ class QgsOpenScope:
             return
 
         try:
-            drawCircles(radius)
+            drawing.drawCircles(radius)
         except Exception as e:
             QMessageBox.warning(None, 'QgsOpenScope', str(e))
 
@@ -326,97 +312,29 @@ class QgsOpenScope:
             return
 
         try:
-            drawRunwayExtension(length)
+            drawing.drawRunwayExtension(length)
         except Exception as e:
             QMessageBox.warning(None, 'QgsOpenScope', str(e))
 
     def exportAirspace(self):
         """Exports the Airspace features as JSON."""
-        airspaces = QgsProject.instance().mapLayersByName('Airspace')
-
-        if not airspaces:
-            QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find a \'Airspace\' layer.')
-            return
-
-        self.copyToClipboard(AirspaceModel.export(airspaces[0]))
-        QMessageBox.information(None, 'QgsOpenScope', 'Airspace JSON has been copied to the clipboard.')
+        exporter.exportAirspace()
 
     def exportFixes(self):
         """Exports the Fixes features as JSON."""
-        fixes = QgsProject.instance().mapLayersByName('Fixes')
-
-        if not fixes:
-            QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find a \'Fixes\' layer.')
-            return
-
-        self.copyToClipboard(FixModel.export(fixes[0]))
-        QMessageBox.information(None, 'QgsOpenScope', 'Fixes JSON has been copied to the clipboard.')
+        exporter.exportFixes()
 
     def exportRestricted(self):
         """Exports the Restricted Airspace features as JSON."""
-        restricted = QgsProject.instance().mapLayersByName('Restricted')
-
-        if not restricted:
-            QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find a \'Restricted\' layer.')
-            return
-
-        self.copyToClipboard(RestrictedModel.export(restricted[0]))
-        QMessageBox.information(None, 'QgsOpenScope', 'Restricted Airspace JSON has been copied to the clipboard.')
+        exporter.exportRestricted()
 
     def exportMaps(self):
         """Exports the Map layers as JSON."""
-        mapsGroup = QgsProject.instance().layerTreeRoot().findGroup('Maps')
-
-        if not mapsGroup:
-            QMessageBox.information(None, 'QgsOpenScope', 'Couldn\'t find any Map layers.')
-            return
-
-        layers = list(map(lambda x: x.layer(), mapsGroup.children()))
-
-        self.copyToClipboard(MapModel.export(layers))
-        QMessageBox.information(None, 'QgsOpenScope', 'Map JSON has been copied to the clipboard.')
+        exporter.exportMaps()
 
     def exportTerrain(self):
         """Exports the Terrain as GeoJSON."""
-        selected = self.iface.layerTreeView().selectedLayers()
-
-        if not selected:
-            QMessageBox.information(None, 'QgsOpenScope', 'At least one terrain layer must be selected for export.')
-            return
-
-        for layer in selected:
-            if layer.fields().indexFromName('elevation') == -1:
-                QMessageBox.information(
-                    None,
-                    'QgsOpenScope',
-                    'The \'%s\' layer doesn\'t have an elevation attribute.' % layer.name()
-                )
-                return
-
-        fileName, _ = QFileDialog.getSaveFileName(None, 'Save openScope terrain', '', 'Terrain Files (*.geojson)')
-        if not fileName:
-            return
-
-        result = processing.run('qgis:mergevectorlayers', {
-            'LAYERS': selected,
-            'OUTPUT': 'memory:'
-        })
-        merged = result['OUTPUT']
-        merged.setName('Terrain - Merged')
-
-        QgsVectorFileWriter.writeAsVectorFormat(
-            merged,
-            fileName,
-            'utf-8',
-            merged.crs(),
-            'GeoJson',
-            attributes=[
-                merged.fields().indexFromName('elevation') # Only the elevation layer
-            ],
-            layerOptions=[
-                'COORDINATE_PRECISION=%d' % EXPORT_PRECISION
-            ]
-        )
+        exporter.exportTerrain()
 
     def generateTerrain(self):
         """Generates the terrain"""
