@@ -59,19 +59,20 @@ class TerrainGenerator(GeneratorBase):
         """Generate the terrain."""
         # Get the clipping bounds
         bounds, perimeter, buffer = self._getPerimeter(polygons)
-        # self._addLayerToGroup(airspace, group)
-        # self._addLayerToGroup(perimeter, group)
-        # self._addLayerToGroup(buffer, group)
+        # self.addLayerToGroup(airspace, group)
+        # self.addLayerToGroup(perimeter, group)
+        # self.addLayerToGroup(buffer, group)
 
         # Get the water
+        print("Getting water")
         water = self._getWater(bounds, buffer)
         self.addLayerToGroup(water, group)
 
         # Height data
         mergedDem, clippedDem, contours = self._getElevationData(buffer, feedback)
-        # self._addLayerToGroup(mergedDem, group)
-        # self._addLayerToGroup(clippedDem, group)
-        # self._addLayerToGroup(contours, group)
+        # self.addLayerToGroup(mergedDem, group)
+        # self.addLayerToGroup(clippedDem, group)
+        # self.addLayerToGroup(contours, group)
 
         # Clean the contours
         cleaned = self._getCleanContours(contours, perimeter, bounds)
@@ -106,6 +107,7 @@ class TerrainGenerator(GeneratorBase):
     def _getCleanContours(self, contours, perimeter, airspace):
         """Get the cleaned contours."""
         # Simplify the contours
+        print("Simplify contours")
         result = processing.run('qgis:simplifygeometries', {
             'INPUT': contours,
             'TOLERANCE': 0.002,
@@ -115,6 +117,7 @@ class TerrainGenerator(GeneratorBase):
         simplified.setName('Contours - Simplified')
 
         # Merge with perimeter
+        print("Merging contours with perimter")
         result = processing.run('qgis:mergevectorlayers', {
             'LAYERS': [simplified, perimeter],
             'OUTPUT': _MEMORY_OUTPUT
@@ -123,6 +126,7 @@ class TerrainGenerator(GeneratorBase):
         merged.setName('Contours - Merged')
 
         # Polygonise
+        print("Polygonise contours")
         result = processing.run('qgis:polygonize', {
             'INPUT': merged,
             'OUTPUT': _MEMORY_OUTPUT,
@@ -132,6 +136,7 @@ class TerrainGenerator(GeneratorBase):
 
         # Select all polygons smaller than 0.0005 sq degrees (about 38ha at lat=52))
         # and eliminate them
+        print("Eliminating small contour polygons")
         selection = polygons.getFeatures(QgsFeatureRequest().setFilterExpression('$area < 0.00005'))
         polygons.selectByIds([k.id() for k in selection])
 
@@ -144,10 +149,12 @@ class TerrainGenerator(GeneratorBase):
         cleaned.setName('Contours - Cleaned')
 
         # Delete any features that weren't eliminated (outside a common boundary)
+        print("Deleting remaining small contour polygons")
         selection = cleaned.getFeatures(QgsFeatureRequest().setFilterExpression('$area < 0.00005'))
         cleaned.dataProvider().deleteFeatures([k.id() for k in selection])
 
         # Clip to airspace
+        print("Clipping contours to bounds")
         result = processing.run('qgis:clip', {
             'INPUT': cleaned,
             'OUTPUT': _MEMORY_OUTPUT,
@@ -157,6 +164,7 @@ class TerrainGenerator(GeneratorBase):
         clipped.setName('Contours - Clipped')
 
         # Multipart to single part
+        print("Converting contours to single part")
         result = processing.run('qgis:multiparttosingleparts', {
             'INPUT': clipped,
             'OUTPUT': _MEMORY_OUTPUT
@@ -175,11 +183,13 @@ class TerrainGenerator(GeneratorBase):
 
     def _getElevationData(self, boundingLayer, feedback):
         """Get the elevation layers."""
+        print("Getting DEM files")
         demFiles = getDemFromLayer(self.getDemsPath(), boundingLayer)
 
         airportPath = self.getAirportPath()
 
         # Merge all the DEM files into a single geotiff
+        print("Merging DEM files")
         mergedFile = os.path.join(airportPath, 'Elevation - Merged.tif')
         if os.path.isfile(mergedFile):
             os.unlink(mergedFile)
@@ -192,6 +202,7 @@ class TerrainGenerator(GeneratorBase):
         merged = QgsRasterLayer(result['OUTPUT'], 'Elevation - Merged')
 
         # Clip the DEM file to the bounds
+        print("Clipping merged DEM")
         clippedFile = os.path.join(airportPath, 'Elevation - Clipped.tif')
         if os.path.isfile(clippedFile):
             os.unlink(clippedFile)
@@ -204,6 +215,7 @@ class TerrainGenerator(GeneratorBase):
         clipped = QgsRasterLayer(result['OUTPUT'], 'Elevation - Clipped')
 
         # Generate the contours
+        print("Generating contours")
         contourFile = os.path.join(airportPath, 'Contours.shp')
         if os.path.isfile(contourFile):
             os.unlink(contourFile)
@@ -224,6 +236,7 @@ class TerrainGenerator(GeneratorBase):
         bounds = self._getBounds(polygons)
 
         # Perimeter
+        print("Getting perimiter")
         result = processing.run('qgis:polygonstolines', {
             'INPUT': bounds,
             'OUTPUT': _MEMORY_OUTPUT
@@ -232,6 +245,7 @@ class TerrainGenerator(GeneratorBase):
         perimeter.setName('Perimeter')
 
         # Buffer the airspace
+        print("Buffering perimiter")
         result = processing.run('qgis:buffer', {
             'INPUT': bounds,
             'OUTPUT': _MEMORY_OUTPUT,
@@ -266,10 +280,12 @@ class TerrainGenerator(GeneratorBase):
         """Get the water layer."""
         gshhsPath = self._config.gshhsPath
 
+        print("Loading coastlines and lakes")
         coastlines = QgsVectorLayer(os.path.join(gshhsPath, 'GSHHS_shp/f/GSHHS_f_L1.shp'), 'Coastline')
         lakes = QgsVectorLayer(os.path.join(gshhsPath, 'GSHHS_shp/f/GSHHS_f_L2.shp'), 'Lakes')
 
         # Clip by the buffer
+        print("Clipping coastlines to buffer")
         result = processing.run('qgis:clip', {
             'INPUT': coastlines,
             'OVERLAY': buffer,
@@ -285,6 +301,7 @@ class TerrainGenerator(GeneratorBase):
         clipped_lakes = result['OUTPUT']
 
         # Simplify
+        print("Simplify coastline geometries")
         result = processing.run('qgis:simplifygeometries', {
             'INPUT': clipped_coastlines,
             'TOLERANCE': 0.002,
@@ -293,10 +310,12 @@ class TerrainGenerator(GeneratorBase):
         cleaned = result['OUTPUT']
 
         # Delete any small islands
+        print("Deleting small islands")
         it = cleaned.getFeatures(QgsFeatureRequest().setFilterExpression("$area < 0.0005"))
         cleaned.dataProvider().deleteFeatures([i.id() for i in it])
 
         # Invert to get the water
+        print("Inverting coastline")
         result = processing.run('qgis:difference', {
             'INPUT': buffer,
             'OVERLAY': cleaned,
@@ -305,6 +324,7 @@ class TerrainGenerator(GeneratorBase):
         difference = result['OUTPUT']
 
         # Merge sea with lakes
+        print("Combining lakes and sea")
         result = processing.run('qgis:mergevectorlayers', {
             'LAYERS': [difference, clipped_lakes],
             'OUTPUT': _MEMORY_OUTPUT
@@ -312,6 +332,7 @@ class TerrainGenerator(GeneratorBase):
         merged_water = result['OUTPUT']
 
         # Re-clip by the airspace
+        print("Clipping water to airspace")
         result = processing.run('qgis:clip', {
             'INPUT': merged_water,
             'OVERLAY': airspace,
@@ -320,6 +341,7 @@ class TerrainGenerator(GeneratorBase):
         clipped = result['OUTPUT']
 
         # Multipart to single part
+        print("Converting water to single part")
         result = processing.run('qgis:multiparttosingleparts', {
             'INPUT': clipped,
             'OUTPUT': _MEMORY_OUTPUT
@@ -328,10 +350,12 @@ class TerrainGenerator(GeneratorBase):
         water.setName('Water')
 
         # Delete any small area of water
+        print("Deleting small areas of water")
         it = water.getFeatures(QgsFeatureRequest().setFilterExpression("$area < 0.0005"))
         water.dataProvider().deleteFeatures([i.id() for i in it])
 
         # Add an elevation attribute (0)
+        print("Adding height data")
         water.startEditing()
         water.addAttribute(QgsField("elevation", QVariant.Double))
         elevationIndex = water.fields().indexFromName('elevation')
@@ -348,6 +372,7 @@ class TerrainGenerator(GeneratorBase):
     def _normalizeContours(self, contours, elevation):
         """Normalize the contours."""
         # Calculate zonal statistics
+        print("Calculating zonal statistics")
         processing.run('qgis:zonalstatistics', {
             'INPUT_RASTER': elevation,
             'INPUT_VECTOR': contours,
@@ -359,6 +384,7 @@ class TerrainGenerator(GeneratorBase):
         contourInterval = self._getContourInterval()
 
         # Remove any polygons lower than the altitude interval
+        print("Removing contours below min interval")
         it = contours.getFeatures(QgsFeatureRequest().setFilterExpression('_mean < %f' % contourInterval))
         contours.dataProvider().deleteFeatures([i.id() for i in it])
 
