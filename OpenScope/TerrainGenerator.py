@@ -228,6 +228,11 @@ class TerrainGenerator(GeneratorBase):
         })
         contours = QgsVectorLayer(result['OUTPUT'], 'Contours')
 
+        # Remove any polygons at or below sea level
+        print("Removing contours at or below sea level")
+        it = contours.getFeatures(QgsFeatureRequest().setFilterExpression('ELEV <= %f' % 0))
+        contours.dataProvider().deleteFeatures([i.id() for i in it])
+
         return (merged, clipped, contours)
 
     def _getPerimeter(self, polygons):
