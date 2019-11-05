@@ -44,7 +44,9 @@ class TerrainGenerator(GeneratorBase):
         if not polygons:
             raise Exception('No valid polygons were selected to determine the terrain bounds')
 
-        self.loadExistingTerrain(terrain)
+        if self._config.loadExistingTerrain:
+            self.loadExistingTerrain(terrain)
+
         self._generateTerrain(terrain, polygons, feedback)
 
     @staticmethod

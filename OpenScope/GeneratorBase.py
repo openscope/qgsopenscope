@@ -16,6 +16,8 @@ class GeneratorConfigBase:
 
     airportFile = None
 
+    loadExistingTerrain = False
+
     projectPath = None
 
     terrainFile = None

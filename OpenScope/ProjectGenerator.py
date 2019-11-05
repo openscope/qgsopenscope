@@ -36,7 +36,9 @@ class ProjectGenerator(GeneratorBase):
         airspace = self._generateAirspace(root)
         self._generateAirspace(root, True)
         self._generateMaps(maps)
-        self.loadExistingTerrain(terrain)
+
+        if self._config.loadExistingTerrain:
+            self.loadExistingTerrain(terrain)
 
         iface.setActiveLayer(airspace)
 
