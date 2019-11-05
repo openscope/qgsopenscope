@@ -53,12 +53,14 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
 
         self.txtAirportPath.setText(SettingsDialog.getAirportPath())
+        self.txtProjectPath.setText(SettingsDialog.getProjectPath())
         self.txtTempPath.setText(SettingsDialog.getTempPath())
-        self.txtGSHHS.setText(SettingsDialog.getGSHHSPath())
+        self.txtGSHHSPath.setText(SettingsDialog.getGSHHSPath())
 
-        self.butSelectAirport.clicked.connect(self._butSelectAirportClicked)
-        self.butSelectTemp.clicked.connect(self._butSelectTempClicked)
-        self.butSelectGSHHS.clicked.connect(self._butSelectGSHHSClicked)
+        self.butSelectAirportPath.clicked.connect(self._butSelectAirportPathClicked)
+        self.butSelectTempPath.clicked.connect(self._butSelectTempPathClicked)
+        self.butSelectGSHHSPath.clicked.connect(self._butSelectGSHHSPathClicked)
+        self.butSelectProjectPath.clicked.connect(self._butSelectProjectPathClicked)
 
         self.buttonBox.accepted.connect(self._buttonBoxAccepted)
         self.buttonBox.rejected.connect(self._buttonBoxRejected)
@@ -67,13 +69,14 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
         """Handler for when the button box is accepted."""
 
         SettingsDialog.setAirportPath(self.txtAirportPath.text())
-        SettingsDialog.setGSHHSPath(self.txtGSHHS.text())
+        SettingsDialog.setGSHHSPath(self.txtGSHHSPath.text())
         SettingsDialog.setTempPath(self.txtTempPath.text())
+        SettingsDialog.setProjectPath(self.txtProjectPath.text())
 
     def _buttonBoxRejected(self):
         """Handler for when the button box is accepted."""
 
-    def _butSelectAirportClicked(self, _e):
+    def _butSelectAirportPathClicked(self, _e):
         """Handler for when the Select Airport button is clicked."""
         directory = QFileDialog.getExistingDirectory(
             None,
@@ -85,19 +88,31 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
             self.txtAirportPath.setText(directory)
             SettingsDialog.setAirportPath(directory)
 
-    def _butSelectGSHHSClicked(self, _e):
+    def _butSelectGSHHSPathClicked(self, _e):
         """Handler for when the Select GSHHG button is clicked."""
         directory = QFileDialog.getExistingDirectory(
             None,
             'Select GSHHS Directory',
-            self.txtGSHHS.text()
+            self.txtGSHHSPath.text()
         )
 
         if directory:
-            self.txtGSHHS.setText(directory)
+            self.txtGSHHSPath.setText(directory)
             SettingsDialog.setGSHHSPath(directory)
 
-    def _butSelectTempClicked(self, _e):
+    def _butSelectProjectPathClicked(self, _e):
+        """Handler for when the Select Project button is clicked."""
+        directory = QFileDialog.getExistingDirectory(
+            None,
+            'Select Project Directory',
+            self.txtProjectPath.text()
+        )
+
+        if directory:
+            self.txtProjectPath.setText(directory)
+            SettingsDialog.setGSHHSPath(directory)
+
+    def _butSelectTempPathClicked(self, _e):
         """Handler for when the Select Temp button is clicked."""
         directory = QFileDialog.getExistingDirectory(
             None,
@@ -142,6 +157,11 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
         )
 
     @staticmethod
+    def getProjectPath():
+        """Gets the Project path"""
+        return SettingsDialog._readSetting('projectPath', os.path.expanduser('~/qgsopenscope'))
+
+    @staticmethod
     def getTempPath():
         """Gets the temp path"""
         return SettingsDialog._readSetting('tempPath', tempfile.tempdir)
@@ -160,6 +180,11 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
     def setLastAirportPath(path):
         """Sets the path of last airport used"""
         SettingsDialog._saveSetting('lastAirport', path)
+
+    @staticmethod
+    def setProjectPath(path):
+        """sets the Project path"""
+        SettingsDialog._saveSetting('projectPath', path)
 
     @staticmethod
     def setTempPath(path):

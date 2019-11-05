@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>551</width>
-    <height>143</height>
+    <height>184</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
      <x>0</x>
      <y>0</y>
      <width>551</width>
-     <height>141</height>
+     <height>181</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
@@ -61,7 +61,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="butSelectAirport">
+       <widget class="QPushButton" name="butSelectAirportPath">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -88,21 +88,21 @@
      </layout>
     </item>
     <item row="1" column="0">
-     <widget class="QLabel" name="lblTemp">
+     <widget class="QLabel" name="lblProject">
       <property name="text">
-       <string>Temp Path</string>
+       <string>Project Path</string>
       </property>
      </widget>
     </item>
     <item row="1" column="1">
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
+     <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0">
       <item>
-       <widget class="QLineEdit" name="txtTempPath">
+       <widget class="QLineEdit" name="txtProjectPath">
         <property name="text">
          <string/>
         </property>
         <property name="placeholderText">
-         <string>Temp Path</string>
+         <string>Project Path</string>
         </property>
         <property name="clearButtonEnabled">
          <bool>false</bool>
@@ -110,7 +110,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="butSelectTemp">
+       <widget class="QPushButton" name="butSelectProjectPath">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -134,21 +134,21 @@
      </layout>
     </item>
     <item row="2" column="0">
-     <widget class="QLabel" name="lblGSHHS">
+     <widget class="QLabel" name="lblTemp">
       <property name="text">
-       <string>GSHHS Path</string>
+       <string>Temp Path</string>
       </property>
      </widget>
     </item>
     <item row="2" column="1">
-     <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0">
       <item>
-       <widget class="QLineEdit" name="txtGSHHS">
+       <widget class="QLineEdit" name="txtTempPath">
         <property name="text">
          <string/>
         </property>
         <property name="placeholderText">
-         <string>GSHHS Path</string>
+         <string>Temp Path</string>
         </property>
         <property name="clearButtonEnabled">
          <bool>false</bool>
@@ -156,7 +156,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="butSelectGSHHS">
+       <widget class="QPushButton" name="butSelectTempPath">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -179,7 +179,53 @@
       </item>
      </layout>
     </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="lblGSHHS">
+      <property name="text">
+       <string>GSHHS Path</string>
+      </property>
+     </widget>
+    </item>
     <item row="3" column="1">
+     <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
+      <item>
+       <widget class="QLineEdit" name="txtGSHHSPath">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="placeholderText">
+         <string>GSHHS Path</string>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="butSelectGSHHSPath">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>27</width>
+          <height>27</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="4" column="1">
      <widget class="QDialogButtonBox" name="buttonBox">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
