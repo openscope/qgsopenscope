@@ -7,7 +7,7 @@ name=QgsOpenScope
 qgisMinimumVersion=3.4
 description=A collection of tools for the openScope project
 
-version=0.0.4
+version=0.0.5
 author=openScope
 email=3430117+oobayly@users.noreply.github.com
 
@@ -23,6 +23,11 @@ repository=https://github.com/openscope/qgsopenscope
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
+    0.0.5   - Add setting for where the project files are saved
+              Save the project file
+              Save the water and contour files
+              Optimise contour generation
+              Don't load the existing terrain by default
     0.0.3   - Load existing terrain file as read-only, if found
               Update icons
               Improve error handling
