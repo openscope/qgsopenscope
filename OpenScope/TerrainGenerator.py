@@ -167,7 +167,7 @@ class TerrainGenerator(GeneratorBase):
         print("Converting contours to single part")
         result = processing.run('qgis:multiparttosingleparts', {
             'INPUT': clipped,
-            'OUTPUT': _MEMORY_OUTPUT
+            'OUTPUT': self.getOgrString('Contours - Final')
         })
         final = result['OUTPUT']
         final.setName('Contours - Final')
@@ -349,7 +349,7 @@ class TerrainGenerator(GeneratorBase):
         print("Converting water to single part")
         result = processing.run('qgis:multiparttosingleparts', {
             'INPUT': clipped,
-            'OUTPUT': _MEMORY_OUTPUT
+            'OUTPUT': self.getOgrString('Water')
         })
         water = result['OUTPUT']
         water.setName('Water')

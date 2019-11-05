@@ -50,6 +50,16 @@ class GeneratorBase:
         """Gets the ICAO code of the airport."""
         return self.getAirport().getIcao()
 
+    def getOgrString(self, name, fileName=None):
+        """Gets the OGR string for the the specified name"""
+
+        if not fileName:
+            fileName = name
+
+        fileName = os.path.join(self.getProjectPath(), '%s.gpkg' % fileName)
+
+        return 'ogr:dbname=\'%s\' table="%s" (geom) sql=' % (fileName, name)
+
     def getProjectPath(self):
         """Gets the location of where project files for the airport should be stored."""
         path = os.path.join(self._config.projectPath, self.getIcao())
