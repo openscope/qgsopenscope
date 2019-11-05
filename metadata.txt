@@ -28,10 +28,10 @@ changelog=
               Save the water and contour files
               Optimise contour generation
               Don't load the existing terrain by default
-    0.0.3   - Load existing terrain file as read-only, if found
+    0.0.4   - Load existing terrain file as read-only, if found
               Update icons
               Improve error handling
-    0.0.2   - Separate out terrain generation
+    0.0.3   - Separate out terrain generation
     0.0.1   - Initial release
 
 
