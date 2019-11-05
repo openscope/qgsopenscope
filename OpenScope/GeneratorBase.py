@@ -3,6 +3,7 @@ import os
 import tempfile
 from PyQt5.QtGui import QColor
 from qgis.core import (
+    QgsCoordinateReferenceSystem,
     QgsProject,
     QgsRectangle,
     QgsVectorLayer, QgsVectorFileWriter
@@ -141,6 +142,7 @@ class GeneratorBase:
         """Saves the project"""
 
         project = QgsProject.instance()
+        project.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
 
         if not project.fileName():
             project.setFileName(os.path.join(self.getProjectPath(), '%s.qgz' % self.getIcao()))
