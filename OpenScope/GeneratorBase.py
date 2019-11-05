@@ -15,6 +15,8 @@ class GeneratorConfigBase:
 
     airportFile = None
 
+    projectPath = None
+
     terrainFile = None
 
     tmpPath = tempfile.gettempdir()
@@ -38,12 +40,6 @@ class GeneratorBase:
         """Gets the AirportModel."""
         return self._airport
 
-    def getAirportPath(self):
-        """Gets the location of where temporary files for the airport should be stored."""
-        path = os.path.join(self.getTempPath(), self.getIcao())
-        os.makedirs(path, exist_ok=True)
-        return path
-
     def getDemsPath(self):
         """Gets the location of where DEM files should be stored."""
         path = os.path.join(self.getTempPath(), 'dems')
@@ -53,6 +49,12 @@ class GeneratorBase:
     def getIcao(self):
         """Gets the ICAO code of the airport."""
         return self.getAirport().getIcao()
+
+    def getProjectPath(self):
+        """Gets the location of where project files for the airport should be stored."""
+        path = os.path.join(self._config.projectPath, self.getIcao())
+        os.makedirs(path, exist_ok=True)
+        return path
 
     def getTempPath(self):
         """Gets the temporary directory."""
@@ -83,7 +85,7 @@ class GeneratorBase:
         """Creates a new QgsVectorLayer."""
         if not fileName:
             fileName = name
-        fileName = os.path.join(self.getAirportPath(), '%s.gpkg' % fileName)
+        fileName = os.path.join(self.getProjectPath(), '%s.gpkg' % fileName)
 
         layer = self.createMemoryLayer(name, layerType, fields)
 
@@ -110,7 +112,6 @@ class GeneratorBase:
                 '%s.geojson' % str.lower(self.getIcao())
             )
 
-        print(terrainFile)
         if not os.path.isfile(terrainFile):
             return
 
@@ -125,6 +126,16 @@ class GeneratorBase:
         # Load the layer, but don't display by default
         self.addLayerToGroup(layer, group)
         QgsProject.instance().layerTreeRoot().findLayer(layer.id()).setItemVisibilityChecked(False)
+
+    def saveProject(self):
+        """Saves the project"""
+
+        project = QgsProject.instance()
+
+        if not project.fileName():
+            project.setFileName(os.path.join(self.getProjectPath(), '%s.qgz' % self.getIcao()))
+
+        project.write()
 
     def zoomToAllLayers(self):
         """Zoom to the buffered area and redraw"""

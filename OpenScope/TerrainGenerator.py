@@ -186,11 +186,11 @@ class TerrainGenerator(GeneratorBase):
         print("Getting DEM files")
         demFiles = getDemFromLayer(self.getDemsPath(), boundingLayer)
 
-        airportPath = self.getAirportPath()
+        projectPath = self.getProjectPath()
 
         # Merge all the DEM files into a single geotiff
         print("Merging DEM files")
-        mergedFile = os.path.join(airportPath, 'Elevation - Merged.tif')
+        mergedFile = os.path.join(projectPath, 'Elevation - Merged.tif')
         if os.path.isfile(mergedFile):
             os.unlink(mergedFile)
 
@@ -203,7 +203,7 @@ class TerrainGenerator(GeneratorBase):
 
         # Clip the DEM file to the bounds
         print("Clipping merged DEM")
-        clippedFile = os.path.join(airportPath, 'Elevation - Clipped.tif')
+        clippedFile = os.path.join(projectPath, 'Elevation - Clipped.tif')
         if os.path.isfile(clippedFile):
             os.unlink(clippedFile)
 
@@ -216,7 +216,7 @@ class TerrainGenerator(GeneratorBase):
 
         # Generate the contours
         print("Generating contours")
-        contourFile = os.path.join(airportPath, 'Contours.shp')
+        contourFile = os.path.join(projectPath, 'Contours.shp')
         if os.path.isfile(contourFile):
             os.unlink(contourFile)
 

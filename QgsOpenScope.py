@@ -363,12 +363,14 @@ class QgsOpenScope:
 
         config.airportFile = airportFile
         config.gshhsPath = SettingsDialog.getGSHHSPath()
+        config.projectPath = SettingsDialog.getProjectPath()
         config.tmpPath = SettingsDialog.getTempPath()
         config.contourInterval = 304.8
 
         try:
             terrain = TerrainGenerator(config)
             terrain.generateTerrain()
+            terrain.saveProject()
         except Exception as e:
             QMessageBox.warning(None, 'QgsOpenScope', str(e))
 
@@ -399,11 +401,13 @@ class QgsOpenScope:
         config = ProjectGeneratorConfig()
 
         config.airportFile = airportFile
+        config.projectPath = SettingsDialog.getProjectPath()
         config.tmpPath = SettingsDialog.getTempPath()
 
         try:
             proj = ProjectGenerator(config)
             proj.populateProject()
+            proj.saveProject()
         except Exception as e:
             QMessageBox.warning(None, 'QgsOpenScope', str(e))
 
