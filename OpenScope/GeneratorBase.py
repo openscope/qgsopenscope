@@ -147,7 +147,7 @@ class GeneratorBase:
         project.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
 
         if not project.fileName():
-            project.setFileName(os.path.join(self.getProjectPath(), '%s.qgz' % self.getIcao()))
+            project.setFileName(os.path.join(self.getProjectPath(), '%s.qgs' % self.getIcao()))
 
         project.write()
 
