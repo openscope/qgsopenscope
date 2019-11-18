@@ -178,7 +178,7 @@ The tools aren't the most intuitive to use, so it's worth reading the QGIS docum
 The key part of using the shaping tools is that _"For it to work, the reshape tool’s line must cross the polygon’s boundary at least twice."_
 eg. The start and end points should be on the opposite side of the polygon edge that the line you want to reshape to is on.
 
-![Reshaping Features](./images/QGIS%20-%20Reshape%20Polygon%20to%20Line.gif)
+![Reshaping Features](./doc/QGIS%20-%20Reshape%20Polygon%20to%20Line.gif)
 
 It gets very tedious having to click on every vertex. This is where the `Tracing` tool is helpful. Instead of having to click on every point, you simply have to enable it (Keyboard `T`) and then click on a vertex along the line. Some notes on using the tool:
 

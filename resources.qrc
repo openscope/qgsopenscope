@@ -1,11 +1,11 @@
 <RCC>
     <qresource prefix="/plugins/QgsOpenScope" >
-        <file>icons/openscope.png</file>
-        <file>icons/airport-export.png</file>
-        <file>icons/airport-import.png</file>
-        <file>icons/draw-circle.png</file>
-        <file>icons/draw-runways.png</file>
-        <file>icons/terrain-export.png</file>
-        <file>icons/terrain-import.png</file>
+        <file>resources/icons/openscope.png</file>
+        <file>resources/icons/airport-export.png</file>
+        <file>resources/icons/airport-import.png</file>
+        <file>resources/icons/draw-circle.png</file>
+        <file>resources/icons/draw-runways.png</file>
+        <file>resources/icons/terrain-export.png</file>
+        <file>resources/icons/terrain-import.png</file>
     </qresource>
 </RCC>

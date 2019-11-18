@@ -35,7 +35,7 @@ from qgis.PyQt.QtWidgets import QAction, QFileDialog, QInputDialog, QMessageBox
 from .resources import * # pylint: disable=wildcard-import,unused-wildcard-import
 
 # Import the code for the dialog
-from .settings_dialog import SettingsDialog
+from .ui.settings_dialog import SettingsDialog
 
 from .OpenScope.ProjectGenerator import ProjectGenerator, ProjectGeneratorConfig
 from .OpenScope.TerrainGenerator import TerrainGenerator, TerrainGeneratorConfig
@@ -183,14 +183,14 @@ class QgsOpenScope:
 
         # Load
         self.addAction(
-            ':/plugins/QgsOpenScope/icons/airport-import.png',
+            ':/plugins/QgsOpenScope/resources/icons/airport-import.png',
             text=self.tr(u'Load Airport'),
             callback=self.loadAirport,
             parent=self.iface.mainWindow(),
             isToolbarItem=True
         )
         self.addAction(
-            ':/plugins/QgsOpenScope/icons/terrain-import.png',
+            ':/plugins/QgsOpenScope/resources/icons/terrain-import.png',
             text='Generate Terrain',
             callback=self.generateTerrain,
             parent=self.iface.mainWindow(),
@@ -228,7 +228,7 @@ class QgsOpenScope:
             isToolbarItem=False
         )
         self.addAction(
-            ':/plugins/QgsOpenScope/icons/terrain-export.png',
+            ':/plugins/QgsOpenScope/resources/icons/terrain-export.png',
             text='Export Terrain',
             callback=self.exportTerrain,
             parent=self.iface.mainWindow(),
@@ -238,14 +238,14 @@ class QgsOpenScope:
         # Drawing
         self.addMenuSeparator()
         self.addAction(
-            ':/plugins/QgsOpenScope/icons/draw-circle.png',
+            ':/plugins/QgsOpenScope/resources/icons/draw-circle.png',
             text='Draw Circle around points',
             callback=self.drawCircles,
             parent=self.iface.mainWindow(),
             isToolbarItem=True
         )
         self.addAction(
-            ':/plugins/QgsOpenScope/icons/draw-runways.png',
+            ':/plugins/QgsOpenScope/resources/icons/draw-runways.png',
             text='Draw Extended Runway Centrelines',
             callback=self.drawRunwayExtensions,
             parent=self.iface.mainWindow(),

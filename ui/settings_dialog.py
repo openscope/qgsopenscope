@@ -28,14 +28,12 @@ import os
 import tempfile
 
 from qgis.core import QgsSettings
-from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtWidgets import QFileDialog
+from .ui_utils import loadUIFormClass
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'settings_dialog_base.ui'))
-
+FORM_CLASS = loadUIFormClass('settings_dialog')
 
 class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
     """The dialog used for configuring settings."""
