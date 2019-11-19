@@ -65,6 +65,7 @@ class ProjectGenerator(GeneratorBase):
         mapsGroup = root.findGroup(LayerName.Maps.value) or self.addGroup(LayerName.Maps.value)
         terrainGroup = root.findGroup(LayerName.Terrain.value) or self.addGroup(LayerName.Terrain.value)
         airspaceGroup = root.findGroup(LayerName.Airspace.value) or self.addGroup(LayerName.Airspace.value)
+        airspace = None
 
         if LayerType.Fixes in layersToAdd:
             self._generateFixes(airportGroup)
@@ -73,7 +74,7 @@ class ProjectGenerator(GeneratorBase):
             self._generateRestricted(airportGroup)
 
         if LayerType.Airspace in layersToAdd:
-            self._generateAirspace(airspaceGroup)
+            airspace = self._generateAirspace(airspaceGroup)
 
         if LayerType.AirspaceHidden in layersToAdd:
             self._generateAirspace(airspaceGroup, True)
@@ -84,7 +85,8 @@ class ProjectGenerator(GeneratorBase):
         if LayerType.ExistingTerrain in layersToAdd:
             self.loadExistingTerrain(terrainGroup)
 
-        iface.setActiveLayer(root.findLayer(LayerName.Airspace.value))
+        if airspace:
+            iface.setActiveLayer(airspace)
 
         self.zoomToAllLayers()
 
