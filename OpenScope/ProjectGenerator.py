@@ -1,4 +1,5 @@
 """The project generator."""
+from enum import Enum, IntFlag
 from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QColor
 from qgis.core import (
@@ -13,8 +14,34 @@ from .GeneratorBase import GeneratorBase, GeneratorConfigBase
 
 _MEMORY_OUTPUT = 'memory:'
 
+class LayerName(Enum):
+    """A list of value names for layers or groups"""
+    Airport = 'Airport'
+    Airspace = 'Airspace'
+    AirspaceHidden = 'Airspace (Hidden)'
+    ExistingTerrain = 'Exiting Terrain'
+    Fixes = 'Fixes'
+    Maps = 'Maps'
+    Restricted = 'Restricted'
+    Terrain = 'Terrain'
+
+class LayerType(IntFlag):
+    """A list of valid values for type of layer to import"""
+    Empty = 0x0
+    All = 0x7fffffff
+    Airspace = 0x1
+    AirspaceHidden = 0x2
+    ExistingTerrain = 0x20
+    Fixes = 0x4
+    Maps = 0x8
+    Restricted = 0x10
+
 class ProjectGeneratorConfig(GeneratorConfigBase):
     """The configuration options passed to the ProjectGenerator constructor."""
+
+    layers = LayerType.Empty
+
+    mapNames = []
 
 class ProjectGenerator(GeneratorBase):
     """The project generator."""
@@ -23,59 +50,82 @@ class ProjectGenerator(GeneratorBase):
 
     def populateProject(self, _feedback=None):
         """Populates the project."""
-        QgsProject.instance().clear()
 
         root = QgsProject.instance().layerTreeRoot()
+        layersToAdd = self._config.layers
 
-        self._generateFixes(root)
-        self._generateRestricted(root)
+        airportGroup = root.findGroup(LayerName.Airport.value) or self.addGroup(LayerName.Airport.value)
+        mapsGroup = root.findGroup(LayerName.Maps.value) or self.addGroup(LayerName.Maps.value)
+        terrainGroup = root.findGroup(LayerName.Terrain.value) or self.addGroup(LayerName.Terrain.value)
+        airspaceGroup = root.findGroup(LayerName.Airspace.value) or self.addGroup(LayerName.Airspace.value)
 
-        maps = self.addGroup('Maps')
-        terrain = self.addGroup('Terrain')
+        if LayerType.Fixes in layersToAdd:
+            self._generateFixes(airportGroup)
 
-        airspace = self._generateAirspace(root)
-        self._generateAirspace(root, True)
-        self._generateMaps(maps)
+        if LayerType.Restricted in layersToAdd:
+            self._generateRestricted(airportGroup)
 
-        if self._config.loadExistingTerrain:
-            self.loadExistingTerrain(terrain)
+        if LayerType.Airspace in layersToAdd:
+            self._generateAirspace(airspaceGroup)
 
-        iface.setActiveLayer(airspace)
+        if LayerType.AirspaceHidden in layersToAdd:
+            self._generateAirspace(airspaceGroup, True)
+
+        if LayerType.Maps in layersToAdd:
+            self._generateMaps(mapsGroup)
+
+        if LayerType.ExistingTerrain in layersToAdd:
+            self.loadExistingTerrain(terrainGroup)
+
+        iface.setActiveLayer(root.findLayer(LayerName.Airspace.value))
 
         self.zoomToAllLayers()
 
     @staticmethod
-    def hasExistingLayers():
+    def hasExistingLayers(layerType=LayerType.All):
         """Gets a flag indicating whether the project has existing layers or groups"""
-        return QgsProject.instance().layerTreeRoot().children() != []
+
+        project = QgsProject.instance()
+        root = project.layerTreeRoot()
+
+        if layerType == LayerType.All:
+            return root.children() != []
+
+        if LayerType.Airspace in layerType:
+            if project.mapLayersByName(LayerName.Airspace.value):
+                return True
+
+        if LayerType.AirspaceHidden in layerType:
+            if project.mapLayersByName(LayerName.AirspaceHidden.value):
+                return True
+
+        if LayerType.Fixes in layerType:
+            if project.mapLayersByName(LayerName.Fixes.value):
+                return True
+
+        if LayerType.Maps in layerType:
+            mapGroup = root.findGroup(LayerName.Maps.value)
+            if mapGroup and mapGroup.children():
+                return True
+
+        if LayerType.Restricted in layerType:
+            if project.mapLayersByName(LayerName.Restricted.value):
+                return True
+
+        return False
 
 #------------------- Private -------------------
 
-    def _generateAirspace(self, group, hiddenAirspace=False):
-        """Generate the Airspace layer."""
+    def _addAirspaceLayer(self, group, layerName):
+        """Adds the airspace layer to the project"""
+
         fields = [
             QgsField('name', QVariant.String),
             QgsField('airspace_class', QVariant.String),
             QgsField('floor', QVariant.Int),
             QgsField('ceiling', QVariant.Int)
         ]
-        layerName = 'Airspace (Hidden)' if hiddenAirspace else 'Airspace'
         layer = self.createVectorLayer(layerName, 'Polygon', fields)
-        features = []
-
-        for a in self.getAirport().getAirspace(hiddenAirspace):
-            feature = QgsFeature()
-            feature.setGeometry(QgsGeometry.fromPolygonXY([a.poly]))
-            feature.setAttributes([
-                None, # ID
-                a.name,
-                a.airspaceClass,
-                a.floor,
-                a.ceiling
-            ])
-            features.append(feature)
-
-        layer.dataProvider().addFeatures(features)
 
         # Colour
         layer.renderer().symbol().setColor(QColor.fromRgb(0x00, 0xff, 0x00))
@@ -95,24 +145,13 @@ class ProjectGenerator(GeneratorBase):
 
         return layer
 
-    def _generateFixes(self, group):
-        """Generate the Fixes layer."""
+    def _addFixesLayer(self, group, layerName):
+        """Adds the fixes layer to the project"""
+
         fields = [
             QgsField('name', QVariant.String),
         ]
-        layer = self.createVectorLayer('Fixes', 'Point', fields)
-        features = []
-
-        for p in self.getAirport().getFixes():
-            feature = QgsFeature()
-            feature.setGeometry(QgsGeometry.fromPointXY(p.location))
-            feature.setAttributes([
-                None,
-                p.name
-            ])
-            features.append(feature)
-
-        layer.dataProvider().addFeatures(features)
+        layer = self.createVectorLayer(layerName, 'Point', fields)
 
         # Symbol
         symbol = QgsMarkerSymbol.createSimple({
@@ -136,45 +175,29 @@ class ProjectGenerator(GeneratorBase):
 
         self.addLayerToGroup(layer, group)
 
-    def _generateMaps(self, group):
-        """Generates the Map layers."""
-        for m in self.getAirport().getMaps():
-            layer = self.createVectorLayer(m.name, 'LineString', fileName='Map - %s' % m.name)
-            features = []
+        return layer
 
-            for l in m.lines:
-                feature = QgsFeature()
-                feature.setGeometry(QgsGeometry.fromPolylineXY(l))
-                features.append(feature)
+    def _addMapLayer(self, group, mapName):
+        """Adds the Map layer to the project"""
 
-            layer.dataProvider().addFeatures(features)
+        layer = self.createVectorLayer(mapName, 'LineString', fileName='Map - %s' % mapName)
 
-            sym = layer.renderer().symbol()
-            sym.setColor(QColor.fromRgb(0x00, 0x00, 0x00))
-            sym.setWidth(0.33)
+        sym = layer.renderer().symbol()
+        sym.setColor(QColor.fromRgb(0x00, 0x00, 0x00))
+        sym.setWidth(0.33)
 
-            self.addLayerToGroup(layer, group)
+        self.addLayerToGroup(layer, group)
 
-    def _generateRestricted(self, group):
-        """Generate the Restricted layer."""
+        return layer
+
+    def _addRestrictedLayer(self, group, layerName):
+        """Adds the Restricted airspaces to the project"""
+
         fields = [
             QgsField('name', QVariant.String),
             QgsField('height', QVariant.String),
         ]
-        layer = self.createVectorLayer('Restricted', 'Polygon', fields)
-        features = []
-
-        for r in self.getAirport().getRestricted():
-            feature = QgsFeature()
-            feature.setGeometry(QgsGeometry.fromPolygonXY([r.coordinates]))
-            feature.setAttributes([
-                None, # ID
-                r.name,
-                r.height
-            ])
-            features.append(feature)
-
-        layer.dataProvider().addFeatures(features)
+        layer = self.createVectorLayer(layerName, 'Polygon', fields)
 
         # Colour
         layer.renderer().symbol().setColor(QColor.fromRgb(0xff, 0x60, 0x60))
@@ -189,5 +212,116 @@ class ProjectGenerator(GeneratorBase):
         layer.triggerRepaint()
 
         self.addLayerToGroup(layer, group)
+
+        return layer
+
+    def _generateAirspace(self, group, hiddenAirspace=False):
+        """Generate the Airspace layer."""
+
+        layerName = LayerName.AirspaceHidden.value if hiddenAirspace else LayerName.Airspace.value
+        found = QgsProject.instance().mapLayersByName(layerName)
+        layer = None
+        features = []
+
+        if found:
+            layer = found[0]
+            layer.dataProvider().truncate()
+        else:
+            layer = self._addAirspaceLayer(group, layerName)
+
+        for a in self.getAirport().getAirspace(hiddenAirspace):
+            feature = QgsFeature()
+            feature.setGeometry(QgsGeometry.fromPolygonXY([a.poly]))
+            feature.setAttributes([
+                None, # ID
+                a.name,
+                a.airspaceClass,
+                a.floor,
+                a.ceiling
+            ])
+            features.append(feature)
+
+        layer.dataProvider().addFeatures(features)
+
+        return layer
+
+    def _generateFixes(self, group):
+        """Generate the Fixes layer."""
+
+        layerName = LayerName.Fixes.value
+        found = QgsProject.instance().mapLayersByName(layerName)
+        layer = None
+        features = []
+
+        if found:
+            layer = found[0]
+            layer.dataProvider().truncate()
+        else:
+            layer = self._addFixesLayer(group, layerName)
+
+        for p in self.getAirport().getFixes():
+            feature = QgsFeature()
+            feature.setGeometry(QgsGeometry.fromPointXY(p.location))
+            feature.setAttributes([
+                None,
+                p.name
+            ])
+            features.append(feature)
+
+        layer.dataProvider().addFeatures(features)
+
+    def _generateMaps(self, group):
+        """Generates the Map layers."""
+
+        mapNames = self._config.mapNames
+
+        for m in self.getAirport().getMaps():
+            name = m.name
+
+            if name not in mapNames:
+                continue
+
+            found = QgsProject.instance().mapLayersByName(name)
+            layer = None
+            features = []
+
+            if found:
+                layer = found[0]
+                layer.dataProvider().truncate()
+            else:
+                layer = self._addMapLayer(group, name)
+
+            for l in m.lines:
+                feature = QgsFeature()
+                feature.setGeometry(QgsGeometry.fromPolylineXY(l))
+                features.append(feature)
+
+            layer.dataProvider().addFeatures(features)
+
+    def _generateRestricted(self, group):
+        """Generate the Restricted layer."""
+
+        layerName = LayerName.Restricted.value
+        found = QgsProject.instance().mapLayersByName(layerName)
+        layer = None
+        features = []
+
+        if found:
+            layer = found[0]
+            layer.dataProvider().truncate()
+        else:
+            layer = self._addRestrictedLayer(group, layerName)
+
+        for r in self.getAirport().getRestricted():
+            feature = QgsFeature()
+            feature.setGeometry(QgsGeometry.fromPolygonXY([r.coordinates]))
+            feature.setAttributes([
+                None, # ID
+                r.name,
+                r.height
+            ])
+            features.append(feature)
+
+        layer.dataProvider().addFeatures(features)
 
         return layer

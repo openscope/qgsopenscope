@@ -35,9 +35,9 @@ from qgis.PyQt.QtWidgets import QAction, QFileDialog, QInputDialog, QMessageBox
 from .resources import * # pylint: disable=wildcard-import,unused-wildcard-import
 
 # Import the code for the dialog
+from .ui.import_dialog import ImportDialog
 from .ui.settings_dialog import SettingsDialog
 
-from .OpenScope.ProjectGenerator import ProjectGenerator, ProjectGeneratorConfig
 from .OpenScope.TerrainGenerator import TerrainGenerator, TerrainGeneratorConfig
 from .OpenScope.utilities import drawing, exporter
 
@@ -377,39 +377,14 @@ class QgsOpenScope:
     def loadAirport(self):
         """Loads an airport into the workspace"""
 
-        if ProjectGenerator.hasExistingLayers():
-            message = (
-                "This will remove all existing layers from the project. "
-                "Are you sure you want to continue?"
-            )
+        dlg = ImportDialog()
 
-            response = QMessageBox.question(
-                None,
-                'QgsOpenScope',
-                message,
-                QMessageBox.Yes, QMessageBox.No
-            )
+        # Show and run the dialog event loop
+        dlg.show()
+        result = dlg.exec_()
 
-            if response == QMessageBox.No:
-                return
-
-        airportFile = self._getAirportFile()
-
-        if not airportFile:
-            return
-
-        config = ProjectGeneratorConfig()
-
-        config.airportFile = airportFile
-        config.projectPath = SettingsDialog.getProjectPath()
-        config.tmpPath = SettingsDialog.getTempPath()
-
-        try:
-            proj = ProjectGenerator(config)
-            proj.populateProject()
-            proj.saveProject()
-        except Exception as e:
-            QMessageBox.warning(None, 'QgsOpenScope', str(e))
+        if result:
+            pass
 
     def showSettingsDialog(self):
         """Show the settings dialog"""

@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-
+"""The dialog used for editing the plugin configuration"""
 import os
 import tempfile
 
