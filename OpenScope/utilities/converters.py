@@ -63,28 +63,34 @@ def parseCoordinateValue(value):
     This emulates openScope's unitConverter.parseCoordinate method
     """
 
+    decimalDegrees = None
+
     try:
-        return float(value)
+        decimalDegrees = float(value)
     except ValueError:
         pass
 
-    match = _LAT_LNG.match(str(value))
-    if match is None:
-        raise Exception('Cannot parse %s as coordinate' % value)
+    if decimalDegrees is None:
+        match = _LAT_LNG.match(str(value))
+        if match is None:
+            raise Exception('Cannot parse %s as coordinate' % value)
 
-    degrees = float(match.group(2))
-    minutes = 0
-    seconds = 0
-    if match.group(5) is not None:
-        minutes = float(match.group(5)) / 60
+        degrees = float(match.group(2))
+        minutes = 0
+        seconds = 0
+        if match.group(5) is not None:
+            minutes = float(match.group(5)) / 60
 
-    if match.group(8) is not None:
-        seconds = float(match.group(8)) / 3600
+        if match.group(8) is not None:
+            seconds = float(match.group(8)) / 3600
 
-    decimalDegrees = degrees + minutes + seconds
+        decimalDegrees = degrees + minutes + seconds
 
-    if _SW.match(match.group(1)):
-        decimalDegrees *= -1
+        if _SW.match(match.group(1)):
+            decimalDegrees *= -1
+
+    if decimalDegrees < -180 or decimalDegrees > 180:
+        raise Exception('Value %s is out of bounds for a coordinate' % value)
 
     return decimalDegrees
 
