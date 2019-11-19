@@ -62,8 +62,11 @@ def parseCoordinateValue(value):
 
     This emulates openScope's unitConverter.parseCoordinate method
     """
-    if isinstance(value, (float, int)):
-        return value
+
+    try:
+        return float(value)
+    except ValueError:
+        pass
 
     match = _LAT_LNG.match(str(value))
     if match is None:
