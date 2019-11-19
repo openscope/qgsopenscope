@@ -143,11 +143,19 @@ class GeneratorBase:
     def saveProject(self):
         """Saves the project"""
 
+        icao = self.getIcao()
+        fileName = os.path.join(self.getProjectPath(), '%s.qgs' % icao)
+
         project = QgsProject.instance()
+        metadata = project.metadata()
+
+        metadata.addKeywords('icao', [icao])
+
         project.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
+        project.setMetadata(metadata)
 
         if not project.fileName():
-            project.setFileName(os.path.join(self.getProjectPath(), '%s.qgs' % self.getIcao()))
+            project.setFileName(fileName)
 
         project.write()
 
