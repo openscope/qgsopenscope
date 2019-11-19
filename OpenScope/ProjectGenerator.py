@@ -51,6 +51,13 @@ class ProjectGenerator(GeneratorBase):
     def populateProject(self, _feedback=None):
         """Populates the project."""
 
+        project = QgsProject.instance()
+        savedICAO = project.metadata().keywords().get('icao')
+
+        # Clear the project if a ICAO id is present and it's not the apt being loaded
+        if savedICAO is not None and savedICAO[0] != self._airport.getIcao():
+            project.clear()
+
         root = QgsProject.instance().layerTreeRoot()
         layersToAdd = self._config.layers
 
