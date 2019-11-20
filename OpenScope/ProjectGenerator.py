@@ -209,7 +209,7 @@ class ProjectGenerator(GeneratorBase):
         layer = self.createVectorLayer(layerName, 'Polygon', fields)
 
         # Colour
-        layer.renderer().symbol().setColor(QColor.fromRgb(0xff, 0x60, 0x60))
+        layer.renderer().symbol().setColor(QColor.fromRgb(0xff, 0x60, 0x60, 0x80))
 
         # Labeling
         settings = QgsPalLayerSettings()
