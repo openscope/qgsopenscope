@@ -256,7 +256,7 @@ class TerrainGenerator(GeneratorBase):
         result = processing.run('qgis:buffer', {
             'INPUT': bounds,
             'OUTPUT': _MEMORY_OUTPUT,
-            'DISTANCE': 0.005
+            'DISTANCE': 0.05
         })
         buffer = result['OUTPUT']
         buffer.setName('Buffer')
