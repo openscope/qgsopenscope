@@ -2,9 +2,10 @@
 import os
 from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QColor
-from qgis.core import (
+from qgis.core import ( 
     QgsFeature, QgsFeatureRequest, QgsField,
     QgsGeometry,
+    QgsMapLayer,
     QgsProject,
     QgsRasterLayer,
     QgsVectorLayer,
@@ -323,10 +324,15 @@ class TerrainGenerator(GeneratorBase):
 
         selected = []
 
-        for layer in QgsProject.instance().layerTreeRoot().findLayers():
+        for layerView in QgsProject.instance().layerTreeRoot().findLayers():
+            layer = layerView.layer()
+
+            if layer.type() != QgsMapLayer.VectorLayer:
+                continue
+
             features = filter(
                 lambda x: x.geometry().type() == QgsWkbTypes.PolygonGeometry,
-                layer.layer().selectedFeatures()
+                layer.selectedFeatures()
             )
 
             selected.extend(features)
