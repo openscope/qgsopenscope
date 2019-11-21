@@ -7,12 +7,14 @@ from qgis.core import (
     QgsGeometry,
     QgsMarkerSymbol,
     QgsPalLayerSettings, QgsProject,
+    QgsRasterLayer,
     QgsVectorLayerSimpleLabeling
 )
 from qgis.utils import iface
 from .GeneratorBase import GeneratorBase, GeneratorConfigBase
 
 _MEMORY_OUTPUT = 'memory:'
+_XYZ_OSM = 'type=xyz&url=https://tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&zmax=19&zmin=0'
 
 class LayerName(Enum):
     """A list of value names for layers or groups"""
@@ -52,14 +54,13 @@ class ProjectGenerator(GeneratorBase):
         """Populates the project."""
 
         project = QgsProject.instance()
+        root = project.layerTreeRoot()
+        layersToAdd = self._config.layers
         savedICAO = project.metadata().keywords().get('icao')
 
-        # Clear the project if a ICAO id is present and it's not the apt being loaded
+        # Clear the project if a ICAO if is present and it's not the apt being loaded
         if savedICAO is not None and savedICAO[0] != self._airport.getIcao():
             project.clear()
-
-        root = QgsProject.instance().layerTreeRoot()
-        layersToAdd = self._config.layers
 
         airportGroup = root.findGroup(LayerName.Airport.value) or self.addGroup(LayerName.Airport.value)
         mapsGroup = root.findGroup(LayerName.Maps.value) or self.addGroup(LayerName.Maps.value)
@@ -85,10 +86,14 @@ class ProjectGenerator(GeneratorBase):
         if LayerType.ExistingTerrain in layersToAdd:
             self.loadExistingTerrain(terrainGroup)
 
+        if not project.mapLayersByName('OpenStreetMap'):
+            osm = QgsRasterLayer(_XYZ_OSM, 'OpenStreetMap', 'wms')
+            self.addLayerToGroup(osm, root)
+
         if airspace:
             iface.setActiveLayer(airspace)
 
-        self.zoomToAllLayers()
+        self.zoomToGroup(airspaceGroup)
 
     @staticmethod
     def hasExistingLayers(layerType=LayerType.All):

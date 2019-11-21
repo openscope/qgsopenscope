@@ -2,7 +2,7 @@
 import os
 from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QColor
-from qgis.core import ( 
+from qgis.core import (
     QgsFeature, QgsFeatureRequest, QgsField,
     QgsGeometry,
     QgsMapLayer,
@@ -67,6 +67,8 @@ class TerrainGenerator(GeneratorBase):
             perimeter.id(),
             buffer.id()
         ])
+
+        self.zoomToGroup(terrain)
 
     @staticmethod
     def hasExistingLayers():

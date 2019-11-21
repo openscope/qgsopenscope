@@ -4,6 +4,7 @@ import tempfile
 from PyQt5.QtGui import QColor
 from qgis.core import (
     QgsCoordinateReferenceSystem,
+    QgsMapLayer,
     QgsProject,
     QgsRectangle,
     QgsVectorLayer, QgsVectorFileWriter
@@ -159,12 +160,20 @@ class GeneratorBase:
 
         project.write()
 
-    def zoomToAllLayers(self):
-        """Zoom to the buffered area and redraw"""
+    def zoomToGroup(self, group=None):
+        """Zoom to the layers in the specified group"""
         canvas = iface.mapCanvas()
         bounds = QgsRectangle()
 
-        for item in QgsProject.instance().layerTreeRoot().findLayers():
+        if not group:
+            group = QgsProject.instance().layerTreeRoot()
+
+        for item in group.findLayers():
+            layer = item.layer()
+
+            if layer.type() != QgsMapLayer.VectorLayer:
+                continue
+
             extent = item.layer().extent()
 
             if not extent.isEmpty():
