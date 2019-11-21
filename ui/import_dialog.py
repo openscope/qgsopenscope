@@ -13,6 +13,8 @@ from .ui_utils import loadUIFormClass
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS = loadUIFormClass('import_dialog')
 
+TOOLTIP_OVERWRITE_TEMPLATE = 'The \'%s\' layer already exists and will be overwritten.'
+
 class ImportDialog(QtWidgets.QDialog, FORM_CLASS):
     """The dialog used for importing an airport."""
 
@@ -111,6 +113,7 @@ class ImportDialog(QtWidgets.QDialog, FORM_CLASS):
         """Configures the checkbox for display"""
 
         hasExisting = ProjectGenerator.hasExistingLayers(layerType)
+        toolTip = TOOLTIP_OVERWRITE_TEMPLATE % text
         label = '%d %s%s' % (
             count,
             text,
@@ -118,6 +121,7 @@ class ImportDialog(QtWidgets.QDialog, FORM_CLASS):
         )
 
         checkbox.setProperty('hasLayer', hasExisting)
+        checkbox.setToolTip(toolTip if hasExisting else None)
         checkbox.setText(label)
         checkbox.setEnabled(count != 0)
         checkbox.setChecked(count != 0)
