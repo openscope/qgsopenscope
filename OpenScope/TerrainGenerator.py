@@ -15,6 +15,8 @@ from .GeneratorBase import GeneratorBase, GeneratorConfigBase
 from .utilities.dem import getDemFromLayer
 
 _MEMORY_OUTPUT = 'memory:'
+_WDB_RES = 'f'
+_WDB_RIVER_LEVELS = [1, 2, 3]
 
 class TerrainGeneratorConfig(GeneratorConfigBase):
     """The configuration options passed to the TerrainGenerator constructor."""
@@ -31,11 +33,12 @@ class TerrainGenerator(GeneratorBase):
     def generateTerrain(self, feedback=None):
         """Generates the terrain"""
 
+        project = QgsProject.instance()
         terrain = TerrainGenerator._getTerrainGroup()
 
         if terrain:
-            for layer in terrain.findLayers():
-                terrain.removeLayer(layer.layer())
+            layers = list(map(lambda x: x.layer().id(), terrain.findLayers()))
+            project.removeMapLayers(layers)
         else:
             terrain = self.addGroup('Terrain')
 
@@ -47,7 +50,22 @@ class TerrainGenerator(GeneratorBase):
         if self._config.loadExistingTerrain:
             self.loadExistingTerrain(terrain)
 
-        self._generateTerrain(terrain, polygons, feedback)
+        # Get the clipping bounds
+        bounds, perimeter, buffer = self._getPerimeter(polygons)
+        # self.addLayerToGroup(airspace, group)
+        # self.addLayerToGroup(perimeter, group)
+        # self.addLayerToGroup(buffer, group)
+
+        self._generateRivers(terrain, buffer)
+
+        self._generateTerrain(terrain, bounds, perimeter, buffer, feedback)
+
+        # Clean up unused layers
+        project.removeMapLayers([
+            bounds.id(),
+            perimeter.id(),
+            buffer.id()
+        ])
 
     @staticmethod
     def hasExistingLayers():
@@ -57,13 +75,47 @@ class TerrainGenerator(GeneratorBase):
 
 #------------------- Private -------------------
 
-    def _generateTerrain(self, group, polygons, feedback):
+    def _generateRivers(self, terrain, buffer):
+        """Generates the river lines within the buffer"""
+
+        wdbPath = os.path.join(self._config.gshhsPath, 'WDBII_shp', _WDB_RES)
+        rivers = self.createVectorLayer('Rivers', 'LineString', fileName='Rivers')
+        features = []
+
+        print('Clipping and simplifying rivers')
+        for level in _WDB_RIVER_LEVELS:
+            levelName = 'WDBII_river_%s_L%02d' % (_WDB_RES, level)
+            shpPath = os.path.join(wdbPath, '%s.shp' % levelName)
+
+            result = processing.run('qgis:clip', {
+                'INPUT': shpPath,
+                'OUTPUT': _MEMORY_OUTPUT,
+                'OVERLAY': buffer
+            })
+
+            result = processing.run('qgis:simplifygeometries', {
+                'INPUT': result['OUTPUT'],
+                'METHOD': 0, # Distance
+                'OUTPUT': _MEMORY_OUTPUT,
+                'TOLERANCE': 0.0005
+            })
+
+            for f in result['OUTPUT'].getFeatures():
+                newFeature = QgsFeature()
+
+                newFeature.setGeometry(f.geometry())
+                features.append(newFeature)
+
+        rivers.dataProvider().addFeatures(features)
+
+        sym = rivers.renderer().symbol()
+        sym.setColor(QColor.fromRgb(0x00, 0xff, 0xff))
+        sym.setWidth(0.66)
+
+        self.addLayerToGroup(rivers, terrain)
+
+    def _generateTerrain(self, group, bounds, perimeter, buffer, feedback):
         """Generate the terrain."""
-        # Get the clipping bounds
-        bounds, perimeter, buffer = self._getPerimeter(polygons)
-        # self.addLayerToGroup(airspace, group)
-        # self.addLayerToGroup(perimeter, group)
-        # self.addLayerToGroup(buffer, group)
 
         # Get the water
         print("Getting water")
@@ -84,8 +136,11 @@ class TerrainGenerator(GeneratorBase):
         self._normalizeContours(cleaned, clippedDem)
 
         # Clean up unused layers
-        for l in [mergedDem, clippedDem, contours]:
-            del l
+        QgsProject.instance().removeMapLayers([
+            mergedDem.id(),
+            clippedDem.id(),
+            contours.id()
+        ])
 
     def _getBounds(self, polygons):
         """Gets the bounds for the terrain"""
