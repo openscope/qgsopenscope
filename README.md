@@ -6,6 +6,7 @@ A QGIS plugin that adds import/export functions for openScope airports. This plu
 - [Table of Contents](#table-of-contents)
 - [Caveats](#caveats)
 - [Features](#features)
+- [Change Log](#change-log)
 - [Requirements](#requirements)
 - [Installation](#installation)
   * [Installing from Source](#installing-from-source)
@@ -41,6 +42,9 @@ Planned features:
 * Exporting selected Fixes
 * RNAV Fix generation
 
+## Change Log
+See the [Releases Page](https://github.com/openscope/qgsopenscope/releases) for the Change Log.
+
 ## Requirements
 * [QGIS 3.4+](https://qgis.org/en/site/) Lower versions of QGIS 3.x may work, haven't been tried.
 It's advisable to use the Long term release (LTR) of QGIS (v.3.4) as likely to be the most stable version
@@ -50,7 +54,7 @@ It's advisable to use the Long term release (LTR) of QGIS (v.3.4) as likely to b
 The plugin can be installed in two ways:
 1. Clone this repository and install it from the CLI
 2. Download the plugin zip file from releases and install from the QGIS Plugin Manager
-See [Installing and using the QgsOpenScope plugin for QGIS](https://www.youtube.com/watch?v=V0A83VNzLCU)
+See [Installing and using the QgsOpenScope plugin for QGIS](https://www.youtube.com/playlist?list=PLQ8NtAf4CF1ORb8RDzI2N-LSGGHS_cbHC)
 
 ### Installing from Source
 
@@ -102,7 +106,7 @@ It's advisable to install the experimental QGIS Plugin Reloader plugin. This wil
 ### Installing from Release
 
 The plugin must be installed manually as it has not been published in the QGIS plugin repository. See also the
-YouTube video - [Installing and using the QgsOpenScope plugin for QGIS](https://www.youtube.com/watch?v=V0A83VNzLCU)
+YouTube video - [Installing and using the QgsOpenScope plugin for QGIS](https://www.youtube.com/playlist?list=PLQ8NtAf4CF1ORb8RDzI2N-LSGGHS_cbHC)
 
 1. Download the QgsOpenScope plugin from the [GitGub website](https://github.com/openscope/qgsopenscope/releases)
 2. Open QGIS and navigate to `Plugins->Manage and install plugins...`
@@ -119,7 +123,7 @@ Database (GSHHG). These are required by the QgsOpenScope plugin in order to gene
 
 ## Usage
 
-The YouTube video [Installing and using the QgsOpenScope plugin for QGIS](https://www.youtube.com/watch?v=V0A83VNzLCU) demonstrates how to install, configure and
+The YouTube video [Installing and using the QgsOpenScope plugin for QGIS](https://www.youtube.com/playlist?list=PLQ8NtAf4CF1ORb8RDzI2N-LSGGHS_cbHC) demonstrates how to install, configure and
 use the plugin.
 
 ### Configure the QgsOpenScope plugin
@@ -133,8 +137,7 @@ Before being used, the plugin needs to know the location of the GSHHG files
 
 ### Loading openScope airport files
 
-Navigate to `Plugins->QgsOpenScope->Load Airport`, select the airport you want to load. The plugin will clear any existing layers
-(it will prompt you to confirm), and will generate the following items:
+Navigate to `Plugins->QgsOpenScope->Load Airport`, select the airport you want to load. The dialog will display which items will be imported. Items in red indicate that an existing layer will be overwritten. The following items can be imported:
 
 * Fixes
 * Restricted
@@ -164,7 +167,7 @@ are required to be modified to coincided with the video map. This uses two QGIS 
 * The [Reshape Feature](https://docs.qgis.org/3.4/en/docs/user_manual/working_with_vector/editing_geometry_attributes.html#reshape-features)
 * Clipping, including the the [Automatic Tracing tool](https://docs.qgis.org/3.4/en/docs/user_manual/working_with_vector/editing_geometry_attributes.html?highlight=trace#automatic-tracing)
 
-The tools aren't the most intuitive to use, so it's worth reading the QGIS documentation in the links above. The YouTube video [Reshaping water polygons to match the video map](https://youtu.be/5-rSBTLS3kA) demonstrates how this can be done:
+The tools aren't the most intuitive to use, so it's worth reading the QGIS documentation in the links above. The YouTube video [Reshaping water polygons to match the video map](https://www.youtube.com/playlist?list=PLQ8NtAf4CF1ORb8RDzI2N-LSGGHS_cbHC) demonstrates how this can be done:
 
 1. Select the layer you want to edit (this will most likely be the `Water` layer)
 2. Enable editing of the layer (either from the Toolbar, or from the Layer context menu)
@@ -187,7 +190,7 @@ It gets very tedious having to click on every vertex. This is where the `Tracing
 
 ### Other plugin features
 
-As well as automatic loading of features and terrain generation, the plugin also has the following features. The YouTube video [Installing and using the QgsOpenScope plugin for QGIS](https://youtu.be/V0A83VNzLCU?t=136) demonstrates how to use these tools.
+As well as automatic loading of features and terrain generation, the plugin also has the following features. The YouTube video [Installing and using the QgsOpenScope plugin for QGIS](https://www.youtube.com/playlist?list=PLQ8NtAf4CF1ORb8RDzI2N-LSGGHS_cbHC) demonstrates how to use these tools.
 
 * Circle generation
 * Extended runway centreline generation
