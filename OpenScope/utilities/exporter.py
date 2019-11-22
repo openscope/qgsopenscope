@@ -1,7 +1,6 @@
 """A collection of functions to help exporting data"""
 from qgis.PyQt.QtWidgets import QApplication, QFileDialog, QMessageBox
 from qgis.core import QgsProject, QgsVectorFileWriter
-from qgis.utils import iface
 import processing # pylint: disable=import-error
 from .converters import EXPORT_PRECISION
 from ..AirspaceModel import AirspaceModel
@@ -57,29 +56,17 @@ def exportMaps():
     _copyToClipboard(MapModel.export(layers))
     QMessageBox.information(None, 'QgsOpenScope', 'Map JSON has been copied to the clipboard.')
 
-def exportTerrain():
+def exportTerrain(layers, fileName):
     """Exports the Terrain as GeoJSON."""
-    selected = iface.layerTreeView().selectedLayers()
 
-    if not selected:
-        QMessageBox.information(None, 'QgsOpenScope', 'At least one terrain layer must be selected for export.')
-        return
+    if not fileName:
+        fileName, _ = QFileDialog.getSaveFileName(None, 'Save openScope terrain', '', 'Terrain Files (*.geojson)')
 
-    for layer in selected:
-        if layer.fields().indexFromName('elevation') == -1:
-            QMessageBox.information(
-                None,
-                'QgsOpenScope',
-                'The \'%s\' layer doesn\'t have an elevation attribute.' % layer.name()
-            )
-            return
-
-    fileName, _ = QFileDialog.getSaveFileName(None, 'Save openScope terrain', '', 'Terrain Files (*.geojson)')
     if not fileName:
         return
 
     result = processing.run('qgis:mergevectorlayers', {
-        'LAYERS': selected,
+        'LAYERS': layers,
         'OUTPUT': 'memory:'
     })
     merged = result['OUTPUT']

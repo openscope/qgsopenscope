@@ -35,6 +35,7 @@ from qgis.PyQt.QtWidgets import QAction, QFileDialog, QInputDialog, QMessageBox
 from .resources import * # pylint: disable=wildcard-import,unused-wildcard-import
 
 # Import the code for the dialog
+from .ui.export_terrain_dialog import ExportTerrainDialog
 from .ui.import_dialog import ImportDialog
 from .ui.settings_dialog import SettingsDialog
 
@@ -232,7 +233,7 @@ class QgsOpenScope:
             text='Export Terrain',
             callback=self.exportTerrain,
             parent=self.iface.mainWindow(),
-            isToolbarItem=False
+            isToolbarItem=True
         )
 
         # Drawing
@@ -333,7 +334,15 @@ class QgsOpenScope:
 
     def exportTerrain(self):
         """Exports the Terrain as GeoJSON."""
-        exporter.exportTerrain()
+
+        dlg = ExportTerrainDialog()
+
+        # Show and run the dialog event loop
+        dlg.show()
+        result = dlg.exec_()
+
+        if result:
+            pass
 
     def generateTerrain(self):
         """Generates the terrain"""
