@@ -16,6 +16,9 @@
   <property name="styleSheet">
    <string notr="true">*[hasLayer=&quot;true&quot;] { color: red}</string>
   </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="9" column="0" colspan="3">
     <widget class="QDialogButtonBox" name="buttonBox">
