@@ -5,6 +5,7 @@ from qgis.core import (
     QgsDistanceArea,
     QgsFeature,
     QgsGeometry,
+    QgsMapLayer,
     QgsProject,
     QgsWkbTypes
 )
@@ -177,11 +178,16 @@ def _getSelectedFeatures():
     """Gets all the selected features"""
     features = []
 
-    for layer in QgsProject.instance().layerTreeRoot().findLayers():
-        if not layer.layer().selectedFeatureCount():
+    for item in QgsProject.instance().layerTreeRoot().findLayers():
+        layer = item.layer()
+
+        if layer.type() != QgsMapLayer.VectorLayer:
             continue
 
-        features.extend(layer.layer().selectedFeatures())
+        if not layer.selectedFeatureCount():
+            continue
+
+        features.extend(layer.selectedFeatures())
 
     return features
 
