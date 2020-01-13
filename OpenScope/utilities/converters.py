@@ -38,7 +38,12 @@ def fromPolyline(feature):
     """Takes a Polyline QgsFeature and creates an array of [lat,lng,lat,lng] values."""
 
     lines = []
-    polyline = feature.geometry().asPolyline()
+    geometry = feature.geometry()
+
+    if geometry is None:
+        return lines
+
+    polyline = geometry.asPolyline()
     count = len(polyline) - 1
     i = 0
 
