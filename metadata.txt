@@ -22,22 +22,7 @@ repository=https://github.com/openscope/qgsopenscope
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=
-    0.0.6   - Add Import Airport Dialog, which allows which items to be imported
-              Add Export Terrain Dialog, which provides a list of which terrain layers can be exported
-              Add WDBII Rivers (Levels 1-3)
-              Add OpenStreetMap layer to the project
-              Improve coordinate validation
-    0.0.5   - Add setting for where the project files are saved
-              Save the project file
-              Save the water and contour files
-              Optimise contour generation
-              Don't load the existing terrain by default
-    0.0.4   - Load existing terrain file as read-only, if found
-              Update icons
-              Improve error handling
-    0.0.3   - Separate out terrain generation
-    0.0.1   - Initial release
+changelog=https://github.com/openscope/qgsopenscope/blob/develop/CHANGELOG.md
 
 
 # Tags are comma separated with spaces allowed
