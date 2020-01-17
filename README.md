@@ -21,6 +21,8 @@ A QGIS plugin that adds import/export functions for openScope airports. This plu
   * [Generating terrain](#generating-terrain)
   * [Modifying water polygons](#modifying-water-polygons)
   * [Other plugin features](#other-plugin-features)
+- [Known Issues](#known-issues)
+  * [Unable to excute algorithm when generating terrain](#unable-to-excute-algorithm-when-generating-terrain)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
@@ -195,3 +197,23 @@ As well as automatic loading of features and terrain generation, the plugin also
 * Circle generation
 * Extended runway centreline generation
 * Exporting of Fixes, Restricted Airspace, Airspace, Maps, Terrain
+
+## Known Issues
+
+### Unable to excute algorithm when generating terrain
+
+**Symptom** - In QGIS 3.4 on Windows, you get the following message:
+> Unable to execute the algorithm
+> Could not load source layer for INPUT: ...Elevation - Merged.tif not found
+
+**Cause** - The gdal_merge script cannot be found, due to a bug in QGIS 3.4 - [Some GDAL Functions not working via QGIS interface 3.4.14 Win10 #33386](https://github.com/qgis/QGIS/issues/33386)
+
+**Solution** - As described by @agiudiceandrea [here](https://github.com/qgis/QGIS/issues/33386#issuecomment-565731708) and [here](https://github.com/qgis/QGIS/issues/33531#issuecomment-569139508), the `PYTHONPATH` isn't properly set.
+> It seems the PYTHONPATH environmental variable is not properly set.
+> It should be set to the path of the folder where there is gdal_polygonize.py (and the other gdal_*.py python scripts): on Windows with a standalone QGIS 3.4 installation it could be e.g. C:\PROGRA\\~1\QGIS3\\~1.4\apps\Python37\Scripts
+
+1. Search your system for the location of the gdal_*.py scripts
+2. Open the QGIS System Settings: `Settings Menu -> Options -> System Tab`
+3. Check for an existing `PYTHONPATH` system environmental variable at the bottom of the page
+4. Add a new `Custom Variable`, called `PYTHONPATH` using the path from step 1 as the value. If there is an existing `PYTHONPATH` system environmental variable, use `Append`, otherwise use `Overwrite`.
+5. Restart QGIS
