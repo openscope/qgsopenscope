@@ -1,17 +1,17 @@
 """A collection of DEM file functions."""
 import math
 import os
+import shutil
 import urllib.request
 import zipfile
-
-_DEM_URI = 'http://viewfinderpanoramas.org/dem3/%s.zip'
+from .dem_map import getTile
 
 #------------------- Public -------------------
 
 def getDemFromBounds(path, bounds):
     """Gets a list of the filename of the DEMs intersecting the QgsRectangle."""
 
-    graticules = getGraticules(bounds)
+    graticules = _getGraticules(bounds)
 
     dems = []
     for item in graticules:
@@ -26,41 +26,6 @@ def getDemFromLayer(path, layer):
     """Gets a list of the filename of the DEMs intersecting the QgsMapLayer."""
     return getDemFromBounds(path, layer.extent())
 
-def getGraticules(bounds):
-    """Gets a list of graticule tuples intersecting the specified QgsRectangle."""
-
-    # Generate the list of all the DEM files needed
-    x0 = math.floor(bounds.xMinimum())
-    y0 = math.floor(bounds.yMinimum())
-    x1 = math.ceil(bounds.xMaximum())
-    y1 = math.ceil(bounds.yMaximum())
-    dems = []
-
-    for x in range(x0, x1):
-        for y in range(y0, y1):
-            dems.append([x, y])
-
-    return dems
-
-def getGroupFromGraticule(graticule):
-    """Gets the name of the group for the specified graticule."""
-
-    return '%(hem)s%(row)s%(col)02d' % {
-        'hem': 'S' if graticule[1] < 0 else '',
-        'row': chr(65 + int(abs(graticule[1] / 4))),
-        'col': 1 + (graticule[0] + 180) / 6
-    }
-
-def getNameFromGraticule(graticule):
-    """Gets the name of the DEM for the specified graticule."""
-
-    return '%(lath)s%(lat)02d%(lngh)s%(lng)03d' % {
-        'lngh': 'W' if graticule[0] < 0 else 'E',
-        'lng': abs(graticule[0]),
-        'lath': 'S' if graticule[1] < 0 else 'N',
-        'lat': abs(graticule[1])
-    }
-
 #------------------- Private -------------------
 
 def _downloadDem(path, graticule):
@@ -69,34 +34,87 @@ def _downloadDem(path, graticule):
     returns the filename of the DEM, or None if not available.
     """
 
-    name = getNameFromGraticule(graticule) # The name of the hgt file
-
-    groupName = getGroupFromGraticule(graticule) # The 4x6 degree graticule
+    name = _getNameFromGraticule(graticule) # The name of the hgt file
 
     os.makedirs(path, exist_ok=True)
 
-    demName = os.path.join(path, groupName, '%s.hgt' % name)
+    demName = '%s.hgt' % name
+    demPath = os.path.join(path, demName)
+    tile = getTile(graticule['lat'], graticule['lng'])
 
-    # Already exists
-    if os.path.isfile(demName):
+    # It's perfectly possible a tile doesn't exist for this graticule
+    if tile:
+        _downloadTile(path, tile)
+
+    if os.path.isfile(demPath):
         print('Got %s' % name)
-        return demName
-
-    # Download the group and extract all the contents
-    zipName = os.path.join(path, '%s.zip' % groupName)
-    if not os.path.isfile(zipName):
-        uri = _DEM_URI % groupName
-        print('Downloading %s.zip...' % groupName)
-        urllib.request.urlretrieve(uri, zipName)
-
-        zf = zipfile.ZipFile(zipName)
-        print('Unzipping %s...' % zipName)
-        for item in zf.namelist():
-            zf.extract(item, path)
-
-    if os.path.exists(demName):
-        print('Got %s' % name)
-        return demName
+        return demPath
 
     print('No DEM file available for %s' % name)
     return None
+
+def _downloadTile(path, tile):
+    """Downloads the specified tile"""
+
+    uri = tile['uri']
+    zipName = os.path.basename(uri)
+    zipPath = os.path.join(path, zipName)
+    touchFile = os.path.join(path, 'downloaded_%s' % zipName)
+
+    # The touchFile indicates that the tile has previously been downloaded an extracted
+    if os.path.isfile(touchFile):
+        return
+
+    # Download the tile and extract all the contents into a flat structure
+    print('Downloading %s ...' % uri)
+    urllib.request.urlretrieve(uri, zipPath)
+    zf = zipfile.ZipFile(zipPath)
+    for item in zf.namelist():
+        fileName = os.path.basename(item)
+
+        if not fileName:
+            continue
+
+        source = zf.open(item)
+        targetPath = os.path.join(path, fileName)
+
+        print('Extracting %s ...' % targetPath)
+        target = open(targetPath, 'wb')
+        with source, target:
+            shutil.copyfileobj(source, target)
+
+    # Remove the archive to save space and create the touchFile to indicate it's been downloaded
+    os.unlink(zipPath)
+    open(touchFile, 'a').close()
+
+def _getGraticules(bounds):
+    """Gets a list of graticule tuples intersecting the specified QgsRectangle."""
+
+    # Generate the list of all the DEM files needed
+    lng0 = math.floor(bounds.xMinimum())
+    lat0 = math.floor(bounds.yMinimum())
+    lng1 = math.ceil(bounds.xMaximum())
+    lat1 = math.ceil(bounds.yMaximum())
+    dems = []
+
+    for lng in range(lng0, lng1):
+        for lat in range(lat0, lat1):
+            dems.append({
+                'lat': lat,
+                'lng': lng
+            })
+
+    return dems
+
+def _getNameFromGraticule(graticule):
+    """Gets the name of the DEM for the specified graticule."""
+
+    lat = graticule['lat']
+    lng = graticule['lng']
+
+    return '%(lath)s%(lat)02d%(lngh)s%(lng)03d' % {
+        'lngh': 'W' if lng < 0 else 'E',
+        'lng': abs(lng),
+        'lath': 'S' if lat < 0 else 'N',
+        'lat': abs(lat)
+    }
