@@ -40,7 +40,7 @@ def fromPolyline(feature):
     lines = []
     geometry = feature.geometry()
 
-    if geometry is None:
+    if geometry.isNull() or geometry.isEmpty():
         return lines
 
     polyline = geometry.asPolyline()
