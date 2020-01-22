@@ -279,13 +279,13 @@ class QgsOpenScope:
     def drawCircles(self):
         """Draws a circle around the selected points"""
 
-        radius, okPress = QInputDialog.getInt(
+        radius, okPress = QInputDialog.getDouble(
             None,
             'Circle Radius',
             'The circle radius in NM:',
             5,
-            1,
-            step=5
+            0.005,
+            decimals=3
         )
 
         if not okPress:
