@@ -25,11 +25,13 @@
 """
 #pylint: disable=broad-except
 
+import math
 import os.path
 
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
+#from qgis.core import QgsProcessingFeedback
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QFileDialog, QInputDialog, QMessageBox
+from qgis.PyQt.QtWidgets import QAction, QFileDialog, QInputDialog, QMessageBox, QProgressDialog
 
 # Initialize Qt resources from file resources.py
 from .resources import * # pylint: disable=wildcard-import,unused-wildcard-import
@@ -41,6 +43,7 @@ from .ui.settings_dialog import SettingsDialog
 
 from .OpenScope.TerrainGenerator import TerrainGenerator, TerrainGeneratorConfig
 from .OpenScope.utilities import drawing, exporter
+from .OpenScope.TextProcessingFeedback import TextProcessingFeedback
 
 class QgsOpenScope:
     """QGIS Plugin Implementation."""
@@ -376,12 +379,28 @@ class QgsOpenScope:
         config.tmpPath = SettingsDialog.getTempPath()
         config.contourInterval = 304.8
 
+        # For providing UI feedback
+        progress = QProgressDialog('', 'Cancel', 0, 100)
+        feedback = TextProcessingFeedback()
+
+        feedback.progressChanged.connect(lambda x: self._updateDialog(progress, value=x))
+        feedback.progressTextChanged.connect(lambda x: self._updateDialog(progress, text=x))
+
+        progress.setAutoClose(False)
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setMinimumDuration(500)
+        progress.canceled.connect(feedback.cancel)
+        progress.show()
+
         try:
             terrain = TerrainGenerator(config)
-            terrain.generateTerrain()
+            terrain.generateTerrain(feedback)
             terrain.saveProject()
+
         except Exception as e:
             QMessageBox.warning(None, 'QgsOpenScope', str(e))
+
+        progress.hide()
 
     def loadAirport(self):
         """Loads an airport into the workspace"""
@@ -428,3 +447,16 @@ class QgsOpenScope:
         SettingsDialog.setLastAirportPath(fileName)
 
         return fileName
+
+    def _updateDialog(self, progressDialog, value=None, text=None):
+        """Helper method for updating the value and text of a QProgressDialog"""
+        if value is not None:
+            if math.isnan(value):
+                value = 0
+
+            progressDialog.setValue(int(value))
+
+        if text is not None:
+            progressDialog.setLabelText(text)
+
+        QCoreApplication.processEvents()

@@ -8,23 +8,30 @@ from .dem_map import getTile
 
 #------------------- Public -------------------
 
-def getDemFromBounds(path, bounds):
+def getDemFromBounds(path, bounds, feedback):
     """Gets a list of the filename of the DEMs intersecting the QgsRectangle."""
 
     graticules = _getGraticules(bounds)
 
+    feedback.setProgress(0)
+
     dems = []
+    index = 0
+    count = len(graticules)
     for item in graticules:
         dem = _downloadDem(path, item)
         # May be null if the tile doesn't exist
         if dem is not None:
             dems.append(dem)
 
+        index = index + 1
+        feedback.setProgress(100 * index / count)
+
     return dems
 
-def getDemFromLayer(path, layer):
+def getDemFromLayer(path, layer, feedback):
     """Gets a list of the filename of the DEMs intersecting the QgsMapLayer."""
-    return getDemFromBounds(path, layer.extent())
+    return getDemFromBounds(path, layer.extent(), feedback)
 
 #------------------- Private -------------------
 
