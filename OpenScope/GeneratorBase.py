@@ -6,7 +6,6 @@ from qgis.core import (
     QgsCoordinateReferenceSystem,
     QgsMapLayer,
     QgsProject,
-    QgsRectangle,
     QgsVectorLayer, QgsVectorFileWriter
 )
 from qgis.utils import iface
@@ -163,7 +162,7 @@ class GeneratorBase:
     def zoomToGroup(self, group=None):
         """Zoom to the layers in the specified group"""
         canvas = iface.mapCanvas()
-        bounds = QgsRectangle()
+        bounds = None
 
         if not group:
             group = QgsProject.instance().layerTreeRoot()
@@ -177,7 +176,12 @@ class GeneratorBase:
             extent = item.layer().extent()
 
             if not extent.isEmpty():
-                bounds.combineExtentWith(extent)
+                if bounds is None:
+                    bounds = extent
+                else:
+                    bounds.combineExtentWith(extent)
 
-        canvas.setExtent(bounds)
+        if bounds is not None and not bounds.isEmpty():
+            canvas.setExtent(bounds)
+
         canvas.refreshAllLayers()
