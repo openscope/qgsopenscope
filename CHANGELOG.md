@@ -1,14 +1,15 @@
+# Table of Contents
 - [Pre-releases](#pre-releases)
 
 # Pre-releases
 
 ## 0.0.7-alpha1 (January 22, 2020)
-## Bugfixes
+### Bugfixes
 - Fix DEM file fetching for Southern Hemisphere and handle non-standard tile regions (eg. Svalbard)
 - Fix test for empty geometry when exporting video maps
 - Fix zooming to airspace extents when loading an airport or generating terrain
 
-## New Features
+### New Features
 - Allow drawing of circles with a decimal radius (min 0.005 NM, ~ 10 m)
 
 ## 0.0.6-alpha3 (January 16, 2020)
