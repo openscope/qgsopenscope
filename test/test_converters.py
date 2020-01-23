@@ -1,11 +1,23 @@
 """DEM utility tests"""
 
 import unittest
+from qgis.core import QgsPointXY
 
-from OpenScope.utilities.converters import parseCoordinateValue
+from OpenScope.utilities.converters import fromPointXY, parseCoordinateValue
 
 class ConvertersTest(unittest.TestCase):
     """A collection of tests for the converter fuctions"""
+
+    def testFromPointXY(self):
+        """Tests that fromPointXY returns the correct value"""
+
+        point = QgsPointXY(-6.61728333, 4.9468472)
+        expected = [
+            'N04.94685',
+            'W006.61728'
+        ]
+
+        self.assertListEqual(fromPointXY(point), expected)
 
     def testParseCoordinateValue(self):
         """Tests that parseCoordinateValue returns the correct values"""
