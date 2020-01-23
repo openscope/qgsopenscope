@@ -18,8 +18,8 @@ def fromPointXY(point):
     ew = 'W' if lng < 0 else 'E'
 
     return [
-        ns + '%02.5f' % abs(lat),
-        ew + '%03.5f' % abs(lng),
+        '{}{:08.5f}'.format(ns, abs(lat)),
+        '{}{:09.5f}'.format(ew, abs(lng))
     ]
 
 def fromPolygon(feature):
