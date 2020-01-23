@@ -8,27 +8,26 @@
 
 """
 
-__author__ = '3430117+oobayly@users.noreply.github.com
-'
+__author__ = '3430117+oobayly@users.noreply.github.com'
 __date__ = '2019-09-13'
 __copyright__ = 'Copyright 2019, openScope'
 
 import unittest
 
-from qgis.PyQt.QtGui import QDialogButtonBox, QDialog
+from qgis.PyQt.QtWidgets import QDialogButtonBox, QDialog
 
-from QgsOpenScope_dialog import QgsOpenScopeDialog
+from ui.settings_dialog import SettingsDialog
 
-from utilities import get_qgis_app
+from .utilities import get_qgis_app
+
 QGIS_APP = get_qgis_app()
-
 
 class QgsOpenScopeDialogTest(unittest.TestCase):
     """Test dialog works."""
 
     def setUp(self):
         """Runs before each test."""
-        self.dialog = QgsOpenScopeDialog(None)
+        self.dialog = SettingsDialog(None)
 
     def tearDown(self):
         """Runs after each test."""
@@ -37,14 +36,14 @@ class QgsOpenScopeDialogTest(unittest.TestCase):
     def test_dialog_ok(self):
         """Test we can click OK."""
 
-        button = self.dialog.button_box.button(QDialogButtonBox.Ok)
+        button = self.dialog.buttonBox.button(QDialogButtonBox.Ok)
         button.click()
         result = self.dialog.result()
         self.assertEqual(result, QDialog.Accepted)
 
     def test_dialog_cancel(self):
         """Test we can click cancel."""
-        button = self.dialog.button_box.button(QDialogButtonBox.Cancel)
+        button = self.dialog.buttonBox.button(QDialogButtonBox.Cancel)
         button.click()
         result = self.dialog.result()
         self.assertEqual(result, QDialog.Rejected)
@@ -53,4 +52,3 @@ if __name__ == "__main__":
     suite = unittest.makeSuite(QgsOpenScopeDialogTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
-

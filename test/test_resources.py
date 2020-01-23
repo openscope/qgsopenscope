@@ -8,8 +8,7 @@
 
 """
 
-__author__ = '3430117+oobayly@users.noreply.github.com
-'
+__author__ = '3430117+oobayly@users.noreply.github.com'
 __date__ = '2019-09-13'
 __copyright__ = 'Copyright 2019, openScope'
 
