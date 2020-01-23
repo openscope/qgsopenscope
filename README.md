@@ -13,6 +13,7 @@ A QGIS plugin that adds import/export functions for openScope airports. This plu
     + [Clone this repository and install it from the CLI](#clone-this-repository-and-install-it-from-the-cli)
       - [Install QGIS 3.4](#install-qgis-34)
       - [Configure the environment](#configure-the-environment)
+      - [Testing](#testing)
   * [Intalling from Release](#intalling-from-release)
   * [Download and unzip the NOAA GSHHG database](#download-and-unzip-the-noaa-gshhg-database)
 - [Usage](#usage)
@@ -104,6 +105,12 @@ pb_tool deploy
 ```
 
 It's advisable to install the experimental QGIS Plugin Reloader plugin. This will enable you to reload the plugin without restarting QGIS ~~if~~ when things go wrong.
+
+##### Testing
+Some simple unit tests are available, and can be run using the following command in the project root:
+``` bash
+python3 -m unittest discover -v -t ./
+```
 
 ### Installing from Release
 
