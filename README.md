@@ -109,7 +109,7 @@ It's advisable to install the experimental QGIS Plugin Reloader plugin. This wil
 ##### Testing
 Some simple unit tests are available, and can be run using the following command in the project root:
 ``` bash
-python3 -m unittest discover -v -t ./
+python3 -m unittest discover -t ./
 ```
 
 ### Installing from Release
