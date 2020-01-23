@@ -1,9 +1,9 @@
 """DEM utility tests"""
 
 import unittest
-from qgis.core import QgsPointXY
+from qgis.core import QgsFeature, QgsGeometry, QgsPointXY
 
-from OpenScope.utilities.converters import fromPointXY, parseCoordinateValue
+from OpenScope.utilities.converters import fromPointXY, fromPolygon, fromPolyline, parseCoordinateValue, toPointXY
 
 class ConvertersTest(unittest.TestCase):
     """A collection of tests for the converter fuctions"""
@@ -18,6 +18,46 @@ class ConvertersTest(unittest.TestCase):
         ]
 
         self.assertListEqual(fromPointXY(point), expected)
+
+    def testFromPolygon(self):
+        """Test that fromPolyline returns the correct value"""
+
+        #pylint: disable=line-too-long
+        wkt = 'Polygon ((-71.5552857013641983 -54.53569639563289684, -70.99220858847313309 -55.20906696362634136, -70.60327903627002399 -54.44281769659932024, -70.99220858847313309 -54.169986518188189, -71.5552857013641983 -54.53569639563289684))'
+        expected = [
+            ['S54.53570', 'W071.55529'],
+            ['S55.20907', 'W070.99221'],
+            ['S54.44282', 'W070.60328'],
+            ['S54.16999', 'W070.99221']
+        ]
+
+        feature = QgsFeature()
+        geom = QgsGeometry.fromWkt(wkt)
+        feature.setGeometry(geom)
+
+        points = fromPolygon(feature)
+
+        self.assertListEqual(points, expected)
+
+    def testFromPolyline(self):
+        """Test that fromPolyline returns the correct value"""
+
+        #pylint: disable=line-too-long
+        wkt = 'LineString (-70.60327903627002399 -54.44281769659932024, -70.99220858847313309 -55.20906696362634136, -71.5552857013641983 -54.53569639563289684, -70.99220858847313309 -54.169986518188189, -70.60327903627002399 -54.44281769659932024)'
+        expected = [
+            ['S54.44282', 'W070.60328', 'S55.20907', 'W070.99221'],
+            ['S55.20907', 'W070.99221', 'S54.53570', 'W071.55529'],
+            ['S54.53570', 'W071.55529', 'S54.16999', 'W070.99221'],
+            ['S54.16999', 'W070.99221', 'S54.44282', 'W070.60328']
+        ]
+
+        feature = QgsFeature()
+        geom = QgsGeometry.fromWkt(wkt)
+        feature.setGeometry(geom)
+
+        points = fromPolyline(feature)
+
+        self.assertListEqual(points, expected)
 
     def testParseCoordinateValue(self):
         """Tests that parseCoordinateValue returns the correct values"""
@@ -35,3 +75,17 @@ class ConvertersTest(unittest.TestCase):
 
         self.assertRaises(Exception, parseCoordinateValue, -181)
         self.assertRaises(Exception, parseCoordinateValue, 181)
+
+    def testToPointXY(self):
+        """Tests that toPointXY returns the correct value"""
+
+        value = [
+            'N04.94685',
+            'W006.61728'
+        ]
+        expected = QgsPointXY(-6.61728, 4.94685)
+
+        point = toPointXY(value)
+
+        self.assertEqual(point.x(), expected.x())
+        self.assertEqual(point.y(), expected.y())
