@@ -68,20 +68,23 @@ def _downloadTile(path, tile):
     # Download the tile and extract all the contents into a flat structure
     print('Downloading %s ...' % uri)
     urllib.request.urlretrieve(uri, zipPath)
-    zf = zipfile.ZipFile(zipPath)
-    for item in zf.namelist():
-        fileName = os.path.basename(item)
 
-        if not fileName:
-            continue
+    with zipfile.ZipFile(zipPath) as zf:
+        for item in zf.namelist():
+            fileName = os.path.basename(item)
 
-        source = zf.open(item)
-        targetPath = os.path.join(path, fileName)
+            if not fileName:
+                continue
 
-        print('Extracting %s ...' % targetPath)
-        target = open(targetPath, 'wb')
-        with source, target:
-            shutil.copyfileobj(source, target)
+            source = zf.open(item)
+            targetPath = os.path.join(path, fileName)
+
+            print('Extracting %s ...' % targetPath)
+            target = open(targetPath, 'wb')
+            with source, target:
+                shutil.copyfileobj(source, target)
+
+        zf.close()
 
     # Remove the archive to save space and create the touchFile to indicate it's been downloaded
     os.unlink(zipPath)
