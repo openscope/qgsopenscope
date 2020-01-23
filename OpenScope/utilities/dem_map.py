@@ -10311,7 +10311,7 @@ def getTile(lat, lng):
 
     matched = list(filter(lambda tile: _isTileMatch(tile, lat, lng), _DEM_TILES))
 
-    matched.sort(key=lambda tile: tile['area'], reverse=True)
+    matched.sort(key=lambda tile: tile['area'])
 
     if not matched:
         return None
