@@ -14,7 +14,14 @@ from qgis.core import (
 import processing # pylint: disable=import-error
 from .GeneratorBase import GeneratorBase, GeneratorConfigBase
 from .utilities.dem import getDemFromLayer
-from .utilities.gshhg import getRiverShapeFile, getShorelineShapeFile, Resolution, RiverLevel, ShorelineLevel
+from .utilities.gshhg import (
+    downloadArchive,
+    getRiverShapeFile,
+    getShorelineShapeFile,
+    Resolution,
+    RiverLevel,
+    ShorelineLevel
+)
 
 _MEMORY_OUTPUT = 'memory:'
 
@@ -55,6 +62,11 @@ class TerrainGenerator(GeneratorBase):
 
         if self._config.loadExistingTerrain:
             self.loadExistingTerrain(terrain)
+
+        # Ensure the GSHHG data is present
+        feedback.setProgressText('Downloading GSHHG archive')
+        feedback.setProgress(0)
+        downloadArchive(self._config.gshhsPath, feedback)
 
         # Get the clipping bounds
         bounds, perimeter, buffer = self._getPerimeter(polygons, feedback)

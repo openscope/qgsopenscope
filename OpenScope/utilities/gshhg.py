@@ -5,6 +5,8 @@ import urllib.request
 import zipfile
 from enum import Enum
 
+from qgis.core import QgsFeedback
+
 _GSHHG_VERSION = '2.3.7'
 _GSHHG_FILE = 'gshhg-shp-%s.zip' % _GSHHG_VERSION
 _GSHHG_URI = 'https://www.ngdc.noaa.gov/mgg/shorelines/data/gshhg/latest/%s' % _GSHHG_FILE
@@ -48,36 +50,7 @@ class ShorelineLevel(Enum):
 
 #------------------- Public -------------------
 
-def getBorderShapeFile(path, resolution, level):
-    """Returns the path to the WDBII border shapefile"""
-    path = _getBorderPath(path, resolution, level)
-
-    if not os.path.exists(path):
-        _downloadArchive(path)
-
-    return path
-
-def getRiverShapeFile(path, resolution, level):
-    """Returns the path to the WDBII river shapefile"""
-    path = _getRiverPath(path, resolution, level)
-
-    if not os.path.exists(path):
-        _downloadArchive(path)
-
-    return path
-
-def getShorelineShapeFile(path, resolution, level):
-    """Returns the path to the WDBII river shapefile"""
-    path = _getShorelinePath(path, resolution, level)
-
-    if not os.path.exists(path):
-        _downloadArchive(path)
-
-    return path
-
-#------------------- Private -------------------
-
-def _downloadArchive(path):
+def downloadArchive(path, feedback=QgsFeedback()):
     """Downloads and extracts GSHHG archive to the specified path"""
 
     os.makedirs(path, exist_ok=True)
@@ -90,7 +63,11 @@ def _downloadArchive(path):
         return
 
     print('Downloading %s ...' % _GSHHG_URI)
-    urllib.request.urlretrieve(_GSHHG_URI, zipPath)
+    urllib.request.urlretrieve(
+        _GSHHG_URI,
+        zipPath,
+        lambda count, blockSize, totalSize: _updateDownloadFeedback(feedback, count, blockSize, totalSize)
+    )
 
     print('Extracting %s ...' % zipPath)
     with zipfile.ZipFile(zipPath) as zf:
@@ -102,6 +79,35 @@ def _downloadArchive(path):
     open(touchFile, 'a').close()
 
     return
+
+def getBorderShapeFile(path, resolution, level, feedback=QgsFeedback()):
+    """Returns the path to the WDBII border shapefile"""
+    path = _getBorderPath(path, resolution, level)
+
+    if not os.path.exists(path):
+        downloadArchive(path, feedback)
+
+    return path
+
+def getRiverShapeFile(path, resolution, level, feedback=QgsFeedback()):
+    """Returns the path to the WDBII river shapefile"""
+    path = _getRiverPath(path, resolution, level)
+
+    if not os.path.exists(path):
+        downloadArchive(path, feedback)
+
+    return path
+
+def getShorelineShapeFile(path, resolution, level, feedback=QgsFeedback()):
+    """Returns the path to the WDBII river shapefile"""
+    path = _getShorelinePath(path, resolution, level)
+
+    if not os.path.exists(path):
+        downloadArchive(path, feedback)
+
+    return path
+
+#------------------- Private -------------------
 
 def _getBorderPath(path, resolution, level):
     """Returns the path to the WDBII border files"""
@@ -120,3 +126,12 @@ def _getShorelinePath(path, resolution, level):
     shapeFile = 'GSHHS_{}_L{}.shp'.format(resolution.value, level.value)
 
     return os.path.join(path, 'GSHHS_shp', resolution.value, shapeFile)
+
+def _updateDownloadFeedback(feedback, count, blockSize, totalSize):
+    """Updates the specified feedback object"""
+    if totalSize == -1:
+        progress = 0
+    else:
+        progress = (count * blockSize) * 100 / totalSize
+
+    feedback.setProgress(min(100, progress))
