@@ -14,10 +14,15 @@ from qgis.core import (
 import processing # pylint: disable=import-error
 from .GeneratorBase import GeneratorBase, GeneratorConfigBase
 from .utilities.dem import getDemFromLayer
+from .utilities.gshhg import getRiverShapeFile, getShorelineShapeFile, Resolution, RiverLevel, ShorelineLevel
 
 _MEMORY_OUTPUT = 'memory:'
-_WDB_RES = 'f'
-_WDB_RIVER_LEVELS = [1, 2, 3]
+
+_WDB_RIVER_LEVELS = [
+    RiverLevel.DOUBLE_LINED_RIVER,
+    RiverLevel.PERMAMENT_MAJOR_RIVER,
+    RiverLevel.ADDITIONAL_MAJOR_RIVER
+]
 
 class TerrainGeneratorConfig(GeneratorConfigBase):
     """The configuration options passed to the TerrainGenerator constructor."""
@@ -81,14 +86,12 @@ class TerrainGenerator(GeneratorBase):
     def _generateRivers(self, terrain, buffer, feedback):
         """Generates the river lines within the buffer"""
 
-        wdbPath = os.path.join(self._config.gshhsPath, 'WDBII_shp', _WDB_RES)
         rivers = self.createVectorLayer('Rivers', 'LineString', fileName='Rivers')
         features = []
 
         self._setProgress(feedback, 'Clipping and simplifying rivers')
         for level in _WDB_RIVER_LEVELS:
-            levelName = 'WDBII_river_%s_L%02d' % (_WDB_RES, level)
-            shpPath = os.path.join(wdbPath, '%s.shp' % levelName)
+            shpPath = getRiverShapeFile(self._config.gshhsPath, Resolution.FULL, level)
 
             result = processing.run('qgis:clip', {
                 'INPUT': shpPath,
@@ -351,8 +354,10 @@ class TerrainGenerator(GeneratorBase):
         gshhsPath = self._config.gshhsPath
 
         self._setProgress(feedback, 'Loading coastlines and lakes')
-        coastlines = QgsVectorLayer(os.path.join(gshhsPath, 'GSHHS_shp/f/GSHHS_f_L1.shp'), 'Coastline')
-        lakes = QgsVectorLayer(os.path.join(gshhsPath, 'GSHHS_shp/f/GSHHS_f_L2.shp'), 'Lakes')
+        coastlinePath = getShorelineShapeFile(gshhsPath, Resolution.FULL, ShorelineLevel.CONTINENTAL)
+        coastlines = QgsVectorLayer(coastlinePath, 'Coastline')
+        lakesPath = getShorelineShapeFile(gshhsPath, Resolution.FULL, ShorelineLevel.LAKES)
+        lakes = QgsVectorLayer(lakesPath, 'Lakes')
 
         # Clip by the buffer
         self._setProgress(feedback, 'Clipping coastlines to buffer')
