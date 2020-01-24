@@ -24,11 +24,9 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
         self.txtAirportPath.setText(SettingsDialog.getAirportPath())
         self.txtProjectPath.setText(SettingsDialog.getProjectPath())
         self.txtTempPath.setText(SettingsDialog.getTempPath())
-        self.txtGSHHSPath.setText(SettingsDialog.getGSHHSPath())
 
         self.butSelectAirportPath.clicked.connect(self._butSelectAirportPathClicked)
         self.butSelectTempPath.clicked.connect(self._butSelectTempPathClicked)
-        self.butSelectGSHHSPath.clicked.connect(self._butSelectGSHHSPathClicked)
         self.butSelectProjectPath.clicked.connect(self._butSelectProjectPathClicked)
 
         self.buttonBox.accepted.connect(self._buttonBoxAccepted)
@@ -38,7 +36,6 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
         """Handler for when the button box is accepted."""
 
         SettingsDialog.setAirportPath(self.txtAirportPath.text())
-        SettingsDialog.setGSHHSPath(self.txtGSHHSPath.text())
         SettingsDialog.setTempPath(self.txtTempPath.text())
         SettingsDialog.setProjectPath(self.txtProjectPath.text())
 
@@ -57,18 +54,6 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
             self.txtAirportPath.setText(directory)
             SettingsDialog.setAirportPath(directory)
 
-    def _butSelectGSHHSPathClicked(self, _e):
-        """Handler for when the Select GSHHG button is clicked."""
-        directory = QFileDialog.getExistingDirectory(
-            None,
-            'Select GSHHS Directory',
-            self.txtGSHHSPath.text()
-        )
-
-        if directory:
-            self.txtGSHHSPath.setText(directory)
-            SettingsDialog.setGSHHSPath(directory)
-
     def _butSelectProjectPathClicked(self, _e):
         """Handler for when the Select Project button is clicked."""
         directory = QFileDialog.getExistingDirectory(
@@ -79,7 +64,7 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
 
         if directory:
             self.txtProjectPath.setText(directory)
-            SettingsDialog.setGSHHSPath(directory)
+            SettingsDialog.setProjectPath(directory)
 
     def _butSelectTempPathClicked(self, _e):
         """Handler for when the Select Temp button is clicked."""

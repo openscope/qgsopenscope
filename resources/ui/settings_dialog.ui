@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>542</width>
-    <height>190</height>
+    <height>154</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -117,44 +117,12 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
-     <item>
-      <widget class="QLineEdit" name="txtGSHHSPath">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="placeholderText">
-        <string>GSHHG Path</string>
-       </property>
-       <property name="clearButtonEnabled">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="butSelectGSHHSPath">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>27</width>
-         <height>27</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>...</string>
-       </property>
-       <property name="checkable">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
+   <item row="2" column="0">
+    <widget class="QLabel" name="lblTemp">
+     <property name="text">
+      <string>Temp Path</string>
+     </property>
+    </widget>
    </item>
    <item row="2" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0">
@@ -195,7 +163,7 @@
      </item>
     </layout>
    </item>
-   <item row="4" column="1">
+   <item row="3" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -212,20 +180,6 @@
     <widget class="QLabel" name="lblProject">
      <property name="text">
       <string>Project Path</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="lblTemp">
-     <property name="text">
-      <string>Temp Path</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="lblGSHHS">
-     <property name="text">
-      <string>GSHHG Path</string>
      </property>
     </widget>
    </item>

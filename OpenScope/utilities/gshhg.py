@@ -1,6 +1,7 @@
 """A collection of GSHHG file functions."""
 
 import os
+import shutil
 import urllib.request
 import zipfile
 from enum import Enum
@@ -106,6 +107,31 @@ def getShorelineShapeFile(path, resolution, level, feedback=QgsFeedback()):
         downloadArchive(path, feedback)
 
     return path
+
+def migrateArchive(originalPath, newPath):
+    """Migrates the GSHHG data to the new path"""
+
+    touchFile = os.path.join(newPath, 'downloaded_%s' % _GSHHG_FILE)
+
+    if os.path.exists(touchFile):
+        return
+
+    directories = ['GSHHS_shp', 'WDBII_shp']
+    success = False
+
+    for item in directories:
+        src = os.path.join(originalPath, item)
+        trg = os.path.join(newPath, item)
+
+        try:
+            print('Moving {} to {}'.format(src, trg))
+            shutil.move(src, trg)
+            success = True
+        except IOError:
+            success = False
+
+    if success:
+        open(touchFile, 'a').close()
 
 #------------------- Private -------------------
 

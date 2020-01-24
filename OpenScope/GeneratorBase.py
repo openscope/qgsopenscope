@@ -49,6 +49,12 @@ class GeneratorBase:
         os.makedirs(path, exist_ok=True)
         return path
 
+    def getGshhgPath(self):
+        """Gets the location of where GSHHG files should be stored."""
+        path = os.path.join(self.getTempPath(), 'gshhg')
+        os.makedirs(path, exist_ok=True)
+        return path
+
     def getIcao(self):
         """Gets the ICAO code of the airport."""
         return self.getAirport().getIcao()

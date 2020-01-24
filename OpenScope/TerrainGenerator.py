@@ -36,8 +36,6 @@ class TerrainGeneratorConfig(GeneratorConfigBase):
 
     contourInterval = 304.8
 
-    gshhsPath = None
-
 class TerrainGenerator(GeneratorBase):
     """The terrain generator."""
 
@@ -66,7 +64,7 @@ class TerrainGenerator(GeneratorBase):
         # Ensure the GSHHG data is present
         feedback.setProgressText('Downloading GSHHG archive')
         feedback.setProgress(0)
-        downloadArchive(self._config.gshhsPath, feedback)
+        downloadArchive(self.getGshhgPath(), feedback)
 
         # Get the clipping bounds
         bounds, perimeter, buffer = self._getPerimeter(polygons, feedback)
@@ -103,7 +101,7 @@ class TerrainGenerator(GeneratorBase):
 
         self._setProgress(feedback, 'Clipping and simplifying rivers')
         for level in _WDB_RIVER_LEVELS:
-            shpPath = getRiverShapeFile(self._config.gshhsPath, Resolution.FULL, level)
+            shpPath = getRiverShapeFile(self.getGshhgPath(), Resolution.FULL, level)
 
             result = processing.run('qgis:clip', {
                 'INPUT': shpPath,
@@ -363,7 +361,7 @@ class TerrainGenerator(GeneratorBase):
 
     def _getWater(self, airspace, buffer, feedback):
         """Get the water layer."""
-        gshhsPath = self._config.gshhsPath
+        gshhsPath = self.getGshhgPath()
 
         self._setProgress(feedback, 'Loading coastlines and lakes')
         coastlinePath = getShorelineShapeFile(gshhsPath, Resolution.FULL, ShorelineLevel.CONTINENTAL)

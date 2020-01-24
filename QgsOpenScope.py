@@ -42,7 +42,7 @@ from .ui.import_dialog import ImportDialog
 from .ui.settings_dialog import SettingsDialog
 
 from .OpenScope.TerrainGenerator import TerrainGenerator, TerrainGeneratorConfig
-from .OpenScope.utilities import drawing, exporter
+from .OpenScope.utilities import drawing, exporter, gshhg
 from .OpenScope.TextProcessingFeedback import TextProcessingFeedback
 
 class QgsOpenScope:
@@ -79,6 +79,8 @@ class QgsOpenScope:
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         self.firstStart = None
+
+        self.migrateSettings()
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -277,6 +279,25 @@ class QgsOpenScope:
                 action)
             self.iface.removeToolBarIcon(action)
 
+    def migrateSettings(self):
+        """Migrate settings from a previous version"""
+        self.migrateGSHHG()
+
+    def migrateGSHHG(self):
+        """Migrate settings from a previous version"""
+        gshhgPath = SettingsDialog.getGSHHSPath()
+        tmpPath = os.path.join(SettingsDialog.getTempPath(), 'qgsopenscope', 'gshhg')
+
+        os.makedirs(tmpPath, exist_ok=True)
+
+        if not gshhgPath or not os.path.exists(gshhgPath):
+            return
+
+        print('Migrating {} to {}'.format(gshhgPath, tmpPath))
+
+        gshhg.migrateArchive(gshhgPath, tmpPath)
+        SettingsDialog.setGSHHSPath(None)
+
 #------------------- Handlers -------------------
 
     def drawCircles(self):
@@ -374,7 +395,6 @@ class QgsOpenScope:
         config = TerrainGeneratorConfig()
 
         config.airportFile = airportFile
-        config.gshhsPath = SettingsDialog.getGSHHSPath()
         config.projectPath = SettingsDialog.getProjectPath()
         config.tmpPath = SettingsDialog.getTempPath()
         config.contourInterval = 304.8
