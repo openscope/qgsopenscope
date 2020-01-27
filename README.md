@@ -51,7 +51,8 @@ See the [Releases Page](https://github.com/openscope/qgsopenscope/releases) for 
 ## Requirements
 * [QGIS 3.4+](https://qgis.org/en/site/) Lower versions of QGIS 3.x may work, haven't been tried.
 It's advisable to use the Long term release (LTR) of QGIS (v.3.4) as likely to be the most stable version
-* The NOAA GSHHG shapefiles. The current (v.2.3.7) version can be [downloaded here](https://www.ngdc.noaa.gov/mgg/shorelines/data/gshhg/latest/gshhg-shp-2.3.7.zip)
+* ~~The NOAA GSHHG shapefiles. The current (v.2.3.7) version can be [downloaded here](https://www.ngdc.noaa.gov/mgg/shorelines/data/gshhg/latest/gshhg-shp-2.3.7.zip)~~
+The NOAA GSHHG shapefiles are now downloaded automatically.
 
 ## Installation
 The plugin can be installed in two ways:
@@ -123,12 +124,7 @@ YouTube video - [Installing and using the QgsOpenScope plugin for QGIS](https://
 
 ### Download and unzip the NOAA GSHHG database
 
-The NOAA provide shorelines, lakes and waterway data in the form of the Global Self-consistent, Hierarchical, High-resolution Geography
-Database (GSHHG). These are required by the QgsOpenScope plugin in order to generate water polygons.
-
-1. Download the [GSHHG Shapefiles](https://www.ngdc.noaa.gov/mgg/shorelines/data/gshhg/latest/gshhg-shp-2.3.7.zip)
-2. Unzip the `GSHHS_shp/f` to a location of your choice
-3. The plugin only uses files in the `GSHHS_shp/f` directory. All other files aren't needed (altough they're interesting to look at)
+This step is no longer needed as the plugin automatically downloads the NOAA GSHHG shapefiles.
 
 ## Usage
 
@@ -137,12 +133,9 @@ use the plugin.
 
 ### Configure the QgsOpenScope plugin
 
-Before being used, the plugin needs to know the location of the GSHHG files
-
 1. Navigate to `Plugins->QgsOpenScope->QgsOpenScope Settings`
 2. Specify the path to the openScope airport JSON files, this isn't strictly necessary but makes things quicker to load airports
 3. Optionally update the path that is used for storing temp files, this should default to the OS default
-4. Specify the path the the GSHHG shapefiles. **Note: this is the path that contains the GSHHS_shp directory**
 
 ### Loading openScope airport files
 
